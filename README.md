@@ -38,7 +38,7 @@ An Ocaml based Texas Hold'em poker game
 
 # compile rule
 - run **make build** to build the project
-- **Note: do not use this functionality yet, I'm not sure if this is correct, since I have not written any testcases** (run **make test** to test the project.)
+- run **make test** to test the project.
 - run **make** to use utop
 - run **make check** to check your environment
 - run **make final check** before submitting
