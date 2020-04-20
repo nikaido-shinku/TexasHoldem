@@ -5,23 +5,25 @@ An Ocaml based Texas Hold'em poker game
 1. **Push everything you want to submit to GitHub.**
 2. **Document everything**
 3. **Test everything before hitting commit**
-4. **Check that your complete submission is on Cornell's GitHub.**
+4. **Remember to check the README file by putting an x between the bracket**
+5. **Check that your complete submission is on Cornell's GitHub.**
+
 
 # Milestones
 
 ## Milestone 1
 
 ### Satisfactory 
-- [ ] signature for cards
+- [x] signature for cards
 - [ ] signature for hands
-- [ ] signature for deck
+- [x] signature for deck
 - [ ] signature for bids 
-- [ ] implement cards
+- [x] implement cards
 - [ ] implement hands
 - [ ] implement deck
 - [ ] implement bids
 ### Good 
--	[ ] signature for types for hand
+-	[ ] signature for types of hands
 - [ ] signature for a hand ranker
 - [ ] implement types for hand
 - [ ] implement hand ranker
