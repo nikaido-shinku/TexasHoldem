@@ -8,6 +8,9 @@ val empty : t
 (** [is_empty d] is whether deck [d] is empty deck*)
 val is_empty : t -> bool
 
+(** [size d] is the size of deck [d]*)
+val size : t -> int
+
 (** [deal d] deal a card from the current deck [d]
     returns [None] if it is an empty deck
     [Some c] if there are cards left 

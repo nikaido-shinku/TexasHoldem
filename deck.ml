@@ -1,16 +1,27 @@
+open Card
 
-type t = unit
+type t =  Card.t list
 
-let empty = failwith "unimplemented" 
+let empty = []
 
-let is_empty d = 
-  failwith "unimplemented" 
+let is_empty = 
+  (=) []
 
 let deal d = 
-  failwith "unimplemented" 
+  match d with 
+  |h :: t -> Some h
+  | _ -> None
+
+let size = List.length
+
+
 
 let shuffle d =
-  failwith "unimplemented" 
+  failwith "unimplemented"
+
+
+
+
 
 let mem deck rank suite = 
   failwith "unimplemented" 
