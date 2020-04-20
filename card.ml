@@ -41,13 +41,16 @@ let compare_rank r1 r2 =
   match r1 , r2 with 
   |a, b when a = b -> EQ
   |ACE , _ -> GT
+  |_,ACE -> LT
   |KING , _ -> GT
+  |_ , KING -> LT
   |QUEEN , _ -> GT
+  |_ , QUEEN -> LT
   |JACK , _ -> GT
+  |_ ,JACK -> LT
   |NUMBER(x) , NUMBER(y) -> if x > y then GT
     else if x< y then LT
     else EQ
-  | _ -> LT
 
 
 let compare c1 c2 = 
