@@ -1,15 +1,7 @@
 type suite = SPADE | HEART | DIAMOND | CLUB
 
 
-type rank = 
-  |NUMBER of int 
-  |KING
-  |QUEEN
-  |JACK
-  |ACE
-
-type order = LT | GT | EQ 
-
+type rank = int 
 
 (** AF : A card [(s, r)] represent a card with rank [r] and suit [s]
     RI: If [r] is a Number, its rank should be between 2 and 10
@@ -24,7 +16,7 @@ let debug= false
 let rep_ok c = 
   if debug then 
     match snd c with
-    |NUMBER (x) when (x < 2 || x > 10) -> 
+    |x when (x < 1 || x > 13) -> 
       failwith "representation invariant for card failed"
     |_ -> c
   else c 
@@ -39,18 +31,12 @@ let make_card s r =
 (** [compare_rank r1 r2] compares the order of two ranks*)
 let compare_rank r1 r2 = 
   match r1 , r2 with 
-  |a, b when a = b -> EQ
-  |ACE , _ -> GT
-  |_,ACE -> LT
-  |KING , _ -> GT
-  |_ , KING -> LT
-  |QUEEN , _ -> GT
-  |_ , QUEEN -> LT
-  |JACK , _ -> GT
-  |_ ,JACK -> LT
-  |NUMBER(x) , NUMBER(y) -> if x > y then GT
-    else if x< y then LT
-    else EQ
+  |1,1 -> 0
+  |1,_ -> 1
+  |_,1 -> -1
+  |_ -> (if r1<r2 then -1 
+         else if r1 = r2 then 0
+         else 1)
 
 
 let compare c1 c2 = 
