@@ -53,4 +53,4 @@ An Ocaml based Texas Hold'em poker game
 
 
 # Credit
-- Most of the prebuild are based on the source code of former CS3110 assignments at Cornell. If there is any violation of academic integrity, I will modify immediately.
+- Most of the prebuild are based on the source code of previous CS3110 assignments at Cornell. If there is any violation of academic integrity, I will modify immediately.
