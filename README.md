@@ -3,8 +3,8 @@ An Ocaml based Texas Hold'em poker game
 
 # Git rule
 1. **Push everything you want to submit to GitHub.**
-2. Sign this document by completing the steps below.
-3. Save this file, stage this file, commit this file, push this file to GitHub.
+2. **Document everything**
+3. **Test everything before hitting commit**
 4. **Check that your complete submission is on Cornell's GitHub.**
 
 # Milestones
