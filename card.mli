@@ -27,3 +27,8 @@ val compare : t -> t -> int
 
 (** [string_of card] is the string representation of [card]*)
 val string_of : t -> string
+(**[convert valu] convert the int [val] to a valid card 
+   the order is [Spade A, Spade 2, Spade 3..., Heart A, ... 
+   Diamond A, .. Club A..]
+*)
+val convert: int -> t
