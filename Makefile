@@ -1,4 +1,4 @@
-MODULES=card deck hand authors
+MODULES=card deck hand authors testexamples
 OBJECTS=$(MODULES:=.cmo)
 MLS=$(MODULES:=.ml)
 MLIS=$(MODULES:=.mli)

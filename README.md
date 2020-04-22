@@ -15,7 +15,7 @@ An Ocaml based Texas Hold'em poker game
 
 ### Satisfactory 
 - [x] signature for cards
-- [ ] signature for hands
+- [x] signature for hands
 - [x] signature for deck
 - [ ] signature for bids 
 - [x] implement cards

@@ -24,3 +24,6 @@ val make_card :  suite -> rank -> t
     For example : [compare (club ace) (club 2)] is  [1]
     [compare (club 2) (heat 2)] is [0]*)
 val compare : t -> t -> int 
+
+(** [string_of card] is the string representation of [card]*)
+val string_of : t -> string

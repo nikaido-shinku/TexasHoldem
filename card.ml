@@ -43,3 +43,10 @@ let compare c1 c2 =
   let r1 = rank_of_card c1 in 
   let r2 = rank_of_card c2 in 
   compare_rank r1 r2
+
+let string_of c = 
+  match c with
+  |(SPADE,  x) -> "\n SPADE " ^ (string_of_int x)
+  |(HEART,  x) -> "\n HEART " ^ (string_of_int x)
+  |(CLUB,  x) -> "\n CLUB " ^ (string_of_int x)
+  |(DIAMOND,  x) -> "\n DIAMOND " ^ (string_of_int x)
