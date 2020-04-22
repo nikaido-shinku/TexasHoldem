@@ -24,3 +24,9 @@ val make_card :  suite -> rank -> t
     For example : [compare (club ace) (club 2)] is  [1]
     [compare (club 2) (heat 2)] is [0]*)
 val compare : t -> t -> int 
+
+(**[convert valu] convert the int [val] to a valid card 
+   the order is [Spade A, Spade 2, Spade 3..., Heart A, ... 
+   Diamond A, .. Club A..]
+*)
+val convert: int -> t

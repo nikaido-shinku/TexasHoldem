@@ -22,11 +22,13 @@ val shuffle : t -> t
 
 (** [mem d r s] is whether the card with rank [r] suite [s] 
     is contained in the deck [d]*)
-val mem : t -> Card.rank -> Card.suite -> bool
+val mem : t -> Card.t -> bool
 
 (** [remove d r s] is the deck[d] without any card with the combination of 
     rank [r] and suite [s]*)
-val remove : t -> Card.rank -> Card.suite -> t
+val remove : t -> Card.t -> t
 
 (** [insert c d] is the deck [d] after inserting the card [c]*)
 val insert : Card.t -> t -> t
+
+val to_list : t -> Card.t list

@@ -43,3 +43,9 @@ let compare c1 c2 =
   let r1 = rank_of_card c1 in 
   let r2 = rank_of_card c2 in 
   compare_rank r1 r2
+
+let convert valu = match valu/13 with 
+  | 0 -> (SPADE, ((mod) valu 13)+1)
+  | 1 -> (HEART, ((mod) valu 13)+1)
+  | 2 -> (DIAMOND, ((mod) valu 13)+1)
+  | _ -> (CLUB, ((mod) valu 13)+1)
