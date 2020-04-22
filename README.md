@@ -19,8 +19,8 @@ An Ocaml based Texas Hold'em poker game
 - [x] signature for deck
 - [ ] signature for bids 
 - [x] implement cards
-- [ ] implement hands
-- [ ] implement deck
+- [x] implement hands
+- [x] implement deck
 - [ ] implement bids
 ### Good 
 - [ ] signature for a hand ranker

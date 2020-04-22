@@ -56,3 +56,6 @@ val category_of : t -> category
 
 (** [string_of hand] is the string representation of [hand]*)
 val string_of : t -> string 
+
+(** [to_list hand] is the list representation of [hand] *)
+val to_list : t -> Card.t list
