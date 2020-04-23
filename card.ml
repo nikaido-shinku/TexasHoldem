@@ -50,6 +50,7 @@ let string_of c =
   |(HEART,  x) -> "\n HEART " ^ (string_of_int x)
   |(CLUB,  x) -> "\n CLUB " ^ (string_of_int x)
   |(DIAMOND,  x) -> "\n DIAMOND " ^ (string_of_int x)
+
 let convert valu = match valu/13 with 
   | 0 -> (SPADE, ((mod) valu 13)+1)
   | 1 -> (HEART, ((mod) valu 13)+1)

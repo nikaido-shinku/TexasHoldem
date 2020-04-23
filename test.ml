@@ -65,6 +65,39 @@ let make_deck_generate (name:string) =
   List.iter print_card_helper (Deck.to_list d);
   name >:: (fun _ -> assert true)
 
+(**[make_deck_mem name deck card output] checks whether a [card] is in the 
+   [deck] and check if the output is the same as [output]*)
+let make_deck_mem 
+    (name: string)
+    (deck: Deck.t)
+    (card: Card.t)
+    (output: bool) = 
+  name >:: (fun _ -> assert_equal output (Deck.mem deck card)) 
+
+(**[make_deck_remove name deck card] checks whether the deck is empty after 
+   removed the only item *)
+let make_deck_remove 
+    (name: string)
+    (deck:Deck.t)
+    (card : Card.t) =
+  name >:: (fun _ -> assert (Deck.is_empty (Deck.remove deck card)))
+
+(**[make_deck_deal name deck card] checks whether the dealt card is the same,
+   and the reamining deck is the same after dealt  *)
+let make_deck_deal 
+    (name:string)
+    (deck: Deck.t)
+    (output: Card.t option * Deck.t) = 
+  name >:: (fun _ -> assert_equal output (Deck.deal deck))
+
+(**[make_deck_size name deck card] checks whether the [size] funciton corretly
+   calculated the siez of [deck]  *)
+let make_deck_size
+    (name:string)
+    (deck: Deck.t)
+    (output: int) = 
+  name >:: (fun _ -> assert_equal output (Deck.size deck))
+
 
 let test_card = [
   make_card_comparison "test for card comparison between king and queen"
@@ -92,6 +125,13 @@ let test_card = [
   make_deck_empty "check empty of deck";
   make_deck_shuffle "shuffle only one card" deck_S9; 
   make_deck_generate "generate a whole shuffled deck"; 
+  make_deck_mem "check s9 in deck" deck_S9 spade_9 true;
+  make_deck_mem "check d9 not  in deck" deck_S9 diamond_9 false;
+  make_deck_remove "remove to get empty" deck_S9 spade_9;
+  make_deck_deal "deal the only card" deck_S9 ((Some spade_9),Deck.empty);
+  make_deck_size "check size 0" Deck.empty 0;
+  make_deck_size "check full deck" (Deck.shuffle Deck.empty) 52;
+  make_deck_size "check one card deck" deck_S9 1;
 
 ]
 
@@ -105,8 +145,6 @@ let test_hand_category
     (input : Hand.t) = 
   name >:: (fun _ ->
       assert_equal expected_output (Hand.category_of input))
-
-
 
 
 
