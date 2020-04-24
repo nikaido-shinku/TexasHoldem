@@ -84,7 +84,7 @@ let player_id_list t =
 let next_player t = 
   let id_list = player_id_list t in
   let x = index t.cur_player id_list 0 in
-  List.nth id_list (x+1 mod List.length id_list)
+  List.nth id_list ((x+1) mod List.length id_list)
 
 let conclude t = {
   t with 
@@ -132,6 +132,9 @@ let bet t n = { t with players = List.map
 let fold t = if (t.round = 0 && (find_player t).role= SmallBlind 
                  && t.cur_bet = 0) 
   then raise BlindFold
+  else if (t.round = 0 && (find_player t).role= BigBlind 
+           && t.cur_bet = smallBlindInit) 
+  then raise BlindFold
   else state_checker {
       t with players = List.filter (fun x -> x.name <> t.cur_player) t.players;
              cur_player = next_player t;
@@ -146,6 +149,8 @@ let call t = if (t.round = 0 && (find_player t).role= SmallBlind
 let check t = if (t.cur_bet <> 0) then raise CannotCheck
   else if (t.round = 0 && (find_player t).role= SmallBlind 
            && t.cur_bet = 0) then raise BlindCheck
+  else if (t.round = 0 && (find_player t).role= BigBlind 
+           && t.cur_bet = smallBlindInit) then raise BlindCheck
   else {
     t with cur_player = next_player t
   }
@@ -184,7 +189,7 @@ let init_state str =
            String.split_on_char ' '
            |> List.filter ((<>) "") in 
   if (nl = []) then Stdlib.raise EmptyPlayers 
-  else let playerlist = initial_playerlist nl standard_deck [] in
+  else let playerlist = initial_playerlist nl (Deck.shuffle standard_deck) [] in
     {
       round = 0;
       all_players = playerlist;
