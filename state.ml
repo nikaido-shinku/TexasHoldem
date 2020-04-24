@@ -32,6 +32,16 @@ type t = {
 
 exception EmptyPlayers
 
+exception BlindFold
+
+exception BlindCheck
+
+exception NotEnoughMoney
+
+exception CannotCheck
+
+exception NoMoreCard
+
 let standard_deck = 
   let rec helper k c = 
     if k = 0 then c 
@@ -105,14 +115,6 @@ let state_checker t =
 
 let find_player t = List.find (fun x -> x.name = t.cur_player) t.players
 
-exception BlindFold
-
-exception BlindCheck
-
-exception NotEnoughMoney
-
-exception CannotCheck
-
 let bet t n = { t with players = List.map 
                            (fun x -> if x.name = t.cur_player then 
                                (if x.bid - (n-x.cur_bet) < 0 then 
@@ -152,21 +154,37 @@ let raise x t = failwith "unimplemented"
 
 let exit t = failwith "unimplemented"
 
+(**[initial_playerlist nl] initialize the player's states at the start of the 
+   round given the names [nl] *)
+let rec initial_playerlist nl deck pl= 
+  match nl with 
+  |[] -> pl
+  | h :: t -> let (card_1, deck_1) = Deck.deal deck in 
+    let (card_2, deck_2) = Deck.deal deck_1 in 
+    let temp_player =
+      {
+        name = h;
+        role = (match pl with 
+            | [] -> SmallBlind
+            | h :: [] -> BigBlind
+            | _ -> Normal);
+        bid = initial_bid;
+        cur_bet = 0;
+        hand = Hand.empty |> Hand.insert 
+                 (match card_1 with Some x -> x 
+                                  | None -> Stdlib.raise NoMoreCard) |> 
+               Hand.insert 
+                 (match card_2 with Some x -> x 
+                                  | None -> Stdlib.raise NoMoreCard);
+      } in 
+    initial_playerlist t deck_2 (temp_player::pl)
+
 let init_state str = 
   let nl = str |>
            String.split_on_char ' '
            |> List.filter ((<>) "") in 
   if (nl = []) then Stdlib.raise EmptyPlayers 
-  else 
-    let playerlist = nl|> List.map (fun p -> 
-        {name = p;
-         role = if List.hd nl = p then SmallBlind else if 
-             List.nth nl 1 = p then BigBlind else
-             Normal;
-         bid = initial_bid;
-         cur_bet = 0;
-         hand = Hand.empty}
-      ) in 
+  else let playerlist = initial_playerlist nl standard_deck [] in
     {
       round = 0;
       all_players = playerlist;
