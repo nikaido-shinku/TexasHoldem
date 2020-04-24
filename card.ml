@@ -38,7 +38,6 @@ let compare_rank r1 r2 =
          else if r1 = r2 then 0
          else 1)
 
-
 let compare c1 c2 = 
   let r1 = rank_of_card c1 in 
   let r2 = rank_of_card c2 in 
