@@ -13,7 +13,7 @@ exception InvalidCommand of string
 (** the padding between displaying information of current room*)
 let padding = "=====================================================\n" 
 
-
+let instruct = "valid commands are: check call raise fold exit quit \n"
 
 (* the following section is the actual parsing of the game*)
 
@@ -82,7 +82,7 @@ let valid_command (cmd: string) =
 
 (**[out_put_description st] outputs the description of the curren tstate[st]*)
 let out_put_description st = 
-  failwith "unimplemented"
+  State.string_of st
 
 (** [rec_game st] recursively display the description of the current state
     [st] and asks for the next command.  If the command is failing under the
@@ -91,12 +91,14 @@ let out_put_description st =
 
 let rec rec_game  (st: State.t) = 
   print_string padding;
-  print_string (out_put_description st ^ "\n");
+  ANSITerminal.(print_string [green] (out_put_description st ^ "\n"));
+  ANSITerminal.(print_string [blue] instruct);
   print_string  "> ";
   try read_line () |> valid_command |> game_command st |> rec_game 
   with
   | End_of_file -> ()
-  | InvalidCommand str -> print_string (str^ "\n") ; rec_game st
+  | InvalidCommand str -> ANSITerminal.(print_string [red] (str^ "\n") );
+    rec_game st
 
 (** [game nl] initialize the state with the name list [nl],
     and then starts playing the game 
@@ -113,10 +115,18 @@ let game (nl: string)=
 let main () =
   ANSITerminal.(print_string [red]
                   "\n\nWelcome to the 3110 TexasHold'em game\n");
-  print_endline "Please enter the player names separated by space\n";
-  print_string  "> ";
-  try  read_line() |>  game  with 
-  | End_of_file -> ()
+
+  let rec get_input b = 
+    if not b then
+      ANSITerminal.(print_string [red] "\n You have entered empty names\n")
+    else (); 
+    print_endline "Please enter the player names separated by space\n";
+    print_string  "> ";
+    try  read_line() |>  game  with 
+    | End_of_file -> ()
+    | EmptyPlayers -> get_input false
+  in 
+  get_input true
 
 (* Execute the game engine. *)
 let () = main ()

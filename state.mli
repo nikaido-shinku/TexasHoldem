@@ -22,6 +22,9 @@ exception NotEnoughMoney
 (**Raised when a player tries to check when the current bet is not 0. *)
 exception CannotCheck
 
+(** Raised when initialized with an empty player list*)
+exception EmptyPlayers
+
 (**[fold t] steps the current state [t] of the game when the current player 
    folds. *)
 val fold : t -> t
@@ -45,5 +48,9 @@ val exit : t -> t
 (** [init_state str] is the initial state with player names as listed 
     in the string [str].
     Space is used to separate each name in [str]
+    Raises EmptyPlayers if [str] is full of spaces
 *)
 val init_state: string -> t
+
+(** [string_of st] is the string representation of state [st]*)
+val string_of : t -> string

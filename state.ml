@@ -30,6 +30,8 @@ type t = {
   community : Card.t list;
 }
 
+exception EmptyPlayers
+
 let standard_deck = 
   let rec helper k c = 
     if k = 0 then c 
@@ -40,6 +42,10 @@ let standard_deck =
                   Deck.insert (Card.make_card SPADE k) 
       in helper (k-1) c' 
   in helper 13 Deck.empty
+
+
+(** the default bids players start with *)
+let initial_bid = 100
 
 let cur_player t = t.cur_player
 
@@ -142,3 +148,61 @@ let check t = if (t.cur_bet <> 0) then raise CannotCheck
   else {
     t with cur_player = next_player t
   }
+
+let raise x t = failwith "unimplemented"
+
+let exit t = failwith "unimplemented"
+
+let init_state str = 
+  let nl = str |>
+           String.split_on_char ' '
+           |> List.filter ((<>) "") in 
+  if (nl = []) then Stdlib.raise EmptyPlayers 
+  else 
+    let playerlist = nl|> List.map (fun p -> 
+        {name = p;
+         role = if List.hd nl = p then SmallBlind else if 
+             List.nth nl 1 = p then BigBlind else
+             Normal;
+         bid = initial_bid;
+         cur_bet = 0;
+         hand = Hand.empty}
+      ) in 
+    {
+      round = 0;
+      all_players = playerlist;
+      players = playerlist;
+      cur_player = List.hd nl ;
+      cur_bet = 0;
+      deck = standard_deck ;
+      pots = 0;
+      community = [];
+    }
+
+
+(** [string_of_role r] is the string representation of role [r]*)
+let string_of_role = function
+  |BigBlind -> "BigBlind"
+  |SmallBlind -> "SmallBlind"
+  |Normal -> "Normal"
+
+let string_of st = 
+  let player_decr = 
+    List.fold_left (fun str pl ->
+        str 
+        ^ pl.name
+        ^ " Role: " ^(string_of_role pl.role)
+        ^ " Bids: " ^ (string_of_int pl.bid) 
+        ^ " Betted: " ^ (string_of_int pl.cur_bet)
+        ^ "\n"
+      ) "" st.players 
+  in 
+  "Current players info: \n \n" ^ player_decr
+  ^ "\n The current player is: " ^ st.cur_player
+  ^ "\n The current bet is: " ^ (string_of_int st.cur_bet)
+  ^ "\n The current community cards are: " ^ (
+    List.fold_left (fun str c ->
+        str ^ " " ^ Card.string_of c )
+      "" st.community
+  )
+  ^ "\n we are at round :" ^ (string_of_int st.round)
