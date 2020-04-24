@@ -84,7 +84,7 @@ let player_id_list t =
 let next_player t = 
   let id_list = player_id_list t in
   let x = index t.cur_player id_list 0 in
-  List.nth id_list (x+1 mod List.length id_list)
+  List.nth id_list ((x+1) mod List.length id_list)
 
 let conclude t = {
   t with 
