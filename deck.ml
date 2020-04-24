@@ -14,7 +14,7 @@ let deal d =
 
 let size = List.length
 
-(**[array_generator k] generated an array from [k] to 52 *)
+(**[array_generator k] generated a list from [k] to 52 *)
 let rec array_generator k = 
   if k = 52 then [] 
   else k:: array_generator (k+1)

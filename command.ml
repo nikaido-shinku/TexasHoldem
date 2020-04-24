@@ -4,6 +4,7 @@ type command =
   |Raise of int
   |Check
   |Exit
+  |Quit
 
 exception Empty
 
@@ -22,6 +23,7 @@ let parse_command parts =
     else if h = "call" then Call
     else if h = "check" then Check
     else if h = "exit" then Exit
+    else if h = "quit" then Quit
     else raise Malformed
 
 let parse str =
