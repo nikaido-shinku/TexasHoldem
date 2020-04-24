@@ -211,7 +211,6 @@ let string_of st =
         str 
         ^ pl.name
         ^ " Role: " ^(string_of_role pl.role)
-        ^ " Hand: " ^ (Hand.string_of pl.hand)
         ^ " Bids: " ^ (string_of_int pl.bid) 
         ^ " Betted: " ^ (string_of_int pl.cur_bet)
         ^ "\n"
@@ -219,6 +218,7 @@ let string_of st =
   in 
   "Current players info: \n \n" ^ player_decr
   ^ "\n The current player is: " ^ st.cur_player
+  ^ "\n Hand: " ^ (Hand.string_of (find_player st).hand)
   ^ "\n The current bet is: " ^ (string_of_int st.cur_bet)
   ^ "\n The current community cards are: " ^ (
     List.fold_left (fun str c ->
