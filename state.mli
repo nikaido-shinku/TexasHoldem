@@ -23,3 +23,9 @@ val raise : int -> t -> t
 val check : t-> t
 
 val exit : t -> t 
+
+(** [init_state str] is the initial state with player names as listed 
+    in the string [str].
+    Space is used to separate each name in [str]
+*)
+val init_state: string -> t

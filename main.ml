@@ -44,7 +44,10 @@ let parse_check st =
   try check st with 
   |BlindCheck -> 
     Stdlib.raise
-      (InvalidCommand "as a small blind, you cannot check on the first round") 
+      (InvalidCommand "as a small blind, you cannot check on the first round")
+  |CannotCheck ->
+    Stdlib.raise 
+      (Invalid_argument "you have not matched your bet yet, cannot check") 
 
 (** [parse_exit st] parses a exit command for the current player on [st]*)
 let parse_exit st = 

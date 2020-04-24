@@ -3,8 +3,9 @@ OBJECTS=$(MODULES:=.cmo)
 MLS=$(MODULES:=.ml)
 MLIS=$(MODULES:=.mli)
 TEST=test.byte
+MAIN=main.byte
 OCAMLBUILD=ocamlbuild -use-ocamlfind -plugin-tag 'package(bisect_ppx-ocamlbuild)'
-PKGS=unix,oUnit,str
+PKGS=unix,oUnit,str,ANSITerminal
 
 default: build
 	utop
@@ -14,6 +15,8 @@ build:
 
 test:
 	BISECT_COVERAGE=YES $(OCAMLBUILD) -tag 'debug' $(TEST) && ./$(TEST) -runner sequential
+play:
+	$(OCAMLBUILD) $(MAIN) && ./$(MAIN)
 
 check:
 	bash checkenv.sh
