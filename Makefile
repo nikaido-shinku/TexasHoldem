@@ -6,6 +6,7 @@ TEST=test.byte
 MAIN=main.byte
 OCAMLBUILD=ocamlbuild -use-ocamlfind -plugin-tag 'package(bisect_ppx-ocamlbuild)'
 PKGS=unix,oUnit,str,ANSITerminal
+DEPENDENCY = _tags .merlin .ocamlinit Makefile README.md checkenv.sh checkzip.sh finalcheck.sh INSTALL.txt
 
 default: build
 	utop
@@ -30,7 +31,7 @@ bisect: clean test
 	bisect-ppx-report -I _build -html report bisect0001.out
 
 zip:
-	zip texas_holdem.zip *.ml* _tags Makefile  
+	zip texas_holdem.zip *.ml* $(DEPENDENCY)
 
 docs: docs-public docs-private
 

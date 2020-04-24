@@ -1,0 +1,3 @@
+Run Make Check, if all the environment are good,
+run make build, then run make play to play.
+You can also run make test to check the test cases.
