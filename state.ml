@@ -193,6 +193,7 @@ let string_of st =
         str 
         ^ pl.name
         ^ " Role: " ^(string_of_role pl.role)
+        ^ " Hand: " ^ (Hand.string_of pl.hand)
         ^ " Bids: " ^ (string_of_int pl.bid) 
         ^ " Betted: " ^ (string_of_int pl.cur_bet)
         ^ "\n"
