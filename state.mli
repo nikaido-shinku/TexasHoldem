@@ -41,3 +41,9 @@ val check : t-> t
 (**[exit t] steps the current state [t] of the game when the current player 
    exits the game. *)
 val exit : t -> t 
+
+(** [init_state str] is the initial state with player names as listed 
+    in the string [str].
+    Space is used to separate each name in [str]
+*)
+val init_state: string -> t
