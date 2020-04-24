@@ -1,0 +1,8 @@
+#require "oUnit";;
+#require "ANSITerminal";;
+#directory "_build";;
+#load "card.cmo";;
+#load "hand.cmo";;
+#load "deck.cmo";;
+#load "command.cmo";;
+#load "state.cmo";;
