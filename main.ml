@@ -19,19 +19,32 @@ let padding = "=====================================================\n"
 
 (** [parse_fold st] parses a fold command for the current player on [st]*)
 let parse_fold (st: State.t) =
-  fold st
+  try fold st with 
+  |BlindFold -> 
+    Stdlib.raise
+      (InvalidCommand "as a small blind, you cannot fold on the first round")
 
 (** [parse_call st] parses a call command for the current player on [st]*)
 let parse_call st = 
-  call st
+  try call st with 
+  |NotEnoughMoney -> 
+    Stdlib.raise
+      (InvalidCommand "You don't have enough money to make the call.")
+
 (** [parse_raise st value] parses a raise with value [value] for the
     current player on [st]*)
 let parse_raise st value =
-  raise value st
+  try raise value st with
+  |NotEnoughMoney -> 
+    Stdlib.raise
+      (InvalidCommand "You don't have enough money to make the raise.")
 
 (** [parse_check st] parses a check command for the current player on [st]*)
 let parse_check st = 
-  check st
+  try check st with 
+  |BlindCheck -> 
+    Stdlib.raise
+      (InvalidCommand "as a small blind, you cannot check on the first round") 
 
 (** [parse_exit st] parses a exit command for the current player on [st]*)
 let parse_exit st = 

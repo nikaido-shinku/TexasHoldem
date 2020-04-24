@@ -12,7 +12,6 @@ type t
 exception BlindFold
 exception BlindCheck
 exception NotEnoughMoney
-exception NotEnoughMoney
 
 val fold : t -> t
 
