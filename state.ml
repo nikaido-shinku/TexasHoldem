@@ -95,6 +95,8 @@ let find_player t = List.find (fun x -> x.name = t.cur_player) t.players
 
 exception BlindFold
 
+exception BlindCheck
+
 exception NotEnoughMoney
 
 exception CannotCheck
@@ -134,4 +136,8 @@ let call t = if (t.round = 0 && (find_player t).role= SmallBlind
              pots = t.pots + t.cur_bet;
     }
 
-let check t = if (t.cur_bet <> 0) then 
+let check t = if (t.cur_bet <> 0) then raise CannotCheck
+else if 
+  else {
+    t with cur_player = next_player t
+  }
