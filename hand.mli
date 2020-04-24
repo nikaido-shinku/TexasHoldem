@@ -59,3 +59,18 @@ val string_of : t -> string
 
 (** [to_list hand] is the list representation of [hand] *)
 val to_list : t -> Card.t list
+
+
+(** [compare hand1 hand2] compares the order of [hand1] [hand2]*)
+val compare : t -> t -> int
+
+
+(** [highest_hand community hands] is the highest possible hand 
+    created by [hands] and [community] cars 
+    tupled with the winner's number(s) 
+
+    Requires: all the hand in [hands] have the same size of 2
+    And [community] has size at least 3
+
+*)
+val highest_hand : Card.t list -> t list -> (int list* category)

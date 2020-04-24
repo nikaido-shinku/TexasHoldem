@@ -154,3 +154,86 @@ let string_of h =
   List.fold_left (fun s c -> s ^ (Card.string_of c)) "" h
 
 let to_list h = h
+
+
+let compare h1 h2 = 
+  let c1 = List.hd (sort h1) in 
+  let c2 = List.hd (sort h2) in 
+  match category_of h1 , category_of h2 with 
+  |a,b when a = b -> Card.compare c1 c2 
+  |RoyalFlush, _ -> 1
+  |_ , RoyalFlush -> -1
+  |StraightFlush, _ -> 1
+  |_, StraightFlush -> -1
+  |FourOfAKind, _ -> 1
+  |_, FourOfAKind -> -1
+  |FullHouse, _ -> 1
+  |_ ,FullHouse -> -1 
+  |Flush, _-> 1
+  |_,Flush -> -1
+  |Straight, _ -> 1
+  |_,Straight -> -1
+  |ThreeOfAKind,_ -> 1
+  |_, ThreeOfAKind -> -1
+  |TwoPair, _ -> 1
+  |_, TwoPair -> -1
+  |Pair,_ -> 1
+  |_,Pair -> -1
+  |HighCard,_ -> 1
+  |_, HighCard -> -1
+  |_ -> 0
+
+
+
+
+(** [possible_hands cards hands s]
+    All the possible hands of size [s] in [Cards]
+*)
+let rec possible_hands 
+    (cards: Card.t list)
+    (s : int) = 
+  let size = List.length cards in 
+  if size = s then [cards]
+  else if size < s then []
+  else match cards with
+    |[] -> []
+    |h :: tl -> 
+      let new_hands = 
+        List.map (fun hand -> h:: hand)(possible_hands tl (s-1)) in 
+      new_hands @ possible_hands tl s
+
+(** [highest_hand_helper hands highest] is
+    the list of highest hands and their index in [hands]
+    and then compare with [highest], take the union if they equal to each other
+    or choose the list with higher order*)
+let rec highest_hand_helper hands highest index=  
+  match hands, highest with
+  |[] , _ -> highest
+  |h :: tl, [] -> highest_hand_helper tl [(h,index)] (index+1)
+  |h1 :: t1 , (h2,i) :: t2 -> 
+    if compare h1 h2 = 0 
+    then highest_hand_helper t1 ((h1,index)::highest) (index + 1)
+    else if compare h1 h2 > 0 
+    then highest_hand_helper t1 [(h1,index)] (index + 1) 
+    else highest_hand_helper t1 highest (index + 1)
+
+
+let highest_hand (community: Card.t list) (hands: t list) = 
+  let high_hands = 
+    hands
+    |>
+    List.map (fun hand -> 
+        (possible_hands (community @ hand) 5)
+        |>List.sort compare 
+        |> List.rev
+        |> List.hd
+      ) in
+  let highest_hands = 
+    (highest_hand_helper high_hands [] 0) in 
+  let highest_category = 
+    highest_hands
+    |> List.hd
+    |> fst
+    |> category_of
+  in 
+  (List.map (snd) highest_hands , highest_category) 
