@@ -22,7 +22,9 @@ let parse_fold (st: State.t) =
   try fold st with 
   |BlindFold -> 
     Stdlib.raise
-      (InvalidCommand "as a small blind, you cannot fold on the first round")
+      (InvalidCommand "as one of the blinds, you cannot fold at the 
+      start of the game."
+      )
 
 (** [parse_call st] parses a call command for the current player on [st]*)
 let parse_call st = 
@@ -44,7 +46,8 @@ let parse_check st =
   try check st with 
   |BlindCheck -> 
     Stdlib.raise
-      (InvalidCommand "as a small blind, you cannot check on the first round")
+      (InvalidCommand "as one of the blinds, you cannot check at the start of 
+      the game.")
   |CannotCheck ->
     Stdlib.raise 
       (Invalid_argument "you have not matched your bet yet, cannot check") 
