@@ -184,7 +184,7 @@ let init_state str =
            String.split_on_char ' '
            |> List.filter ((<>) "") in 
   if (nl = []) then Stdlib.raise EmptyPlayers 
-  else let playerlist = initial_playerlist nl standard_deck [] in
+  else let playerlist = initial_playerlist nl (Deck.shuffle standard_deck) [] in
     {
       round = 0;
       all_players = playerlist;
