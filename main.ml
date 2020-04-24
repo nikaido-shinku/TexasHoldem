@@ -17,25 +17,25 @@ let padding = "=====================================================\n"
 
 (* the following section is the actual parsing of the game*)
 
+(** [parse_fold st] parses a fold command for the current player on [st]*)
 let parse_fold (st: State.t) =
-  failwith "unimplemented"
+  fold st
 
-
+(** [parse_call st] parses a call command for the current player on [st]*)
 let parse_call st = 
-  failwith "unimplemented" 
-
-
-
+  call st
+(** [parse_raise st value] parses a raise with value [value] for the
+    current player on [st]*)
 let parse_raise st value =
-  failwith "unimplemented"
+  raise value st
 
-
+(** [parse_check st] parses a check command for the current player on [st]*)
 let parse_check st = 
-  failwith "unimplemented"
+  check st
 
-
+(** [parse_exit st] parses a exit command for the current player on [st]*)
 let parse_exit st = 
-  failwith "unimplemented"
+  exit st
 
 
 (** [game_command st cmd] is the reulting state of 
