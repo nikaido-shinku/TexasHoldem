@@ -47,6 +47,12 @@ let standard_deck =
 (** the default bids players start with *)
 let initial_bid = 100
 
+(** the base bet small blind has to pay at the start of a game *)
+let smallBlindInit = 1
+
+(** the base bet big blind has to pay at the start of a game *)
+let bigBlindInit = 2
+
 let cur_player t = t.cur_player
 
 let cur_bet t = t.cur_bet
@@ -107,11 +113,18 @@ exception NotEnoughMoney
 
 exception CannotCheck
 
-let bet t n = List.map (fun x -> if x.name = t.cur_player then 
-                           (if x.bid - n < 0 then raise NotEnoughMoney 
-                            else {x with bid = x.bid - n; cur_bet = n}) 
-                         else x) 
-    t.players
+let bet t n = { t with players = List.map 
+                           (fun x -> if x.name = t.cur_player then 
+                               (if x.bid - (n-x.cur_bet) < 0 then 
+                                  raise NotEnoughMoney 
+                                else {x with bid = x.bid - (n-x.cur_bet); 
+                                             cur_bet = n}) 
+                             else x) 
+                           t.players;
+                       cur_player = next_player t;
+                       cur_bet = max t.cur_bet n;
+                       pots = t.pots + n - (find_player t).cur_bet;
+              }
 
 
 let fold t = if (t.round = 0 && (find_player t).role= SmallBlind 
@@ -123,24 +136,10 @@ let fold t = if (t.round = 0 && (find_player t).role= SmallBlind
     }
 
 let call t = if (t.round = 0 && (find_player t).role= SmallBlind 
-                 && t.cur_bet = 0) then state_checker {
-    t with cur_player = next_player t;
-           cur_bet = 1;
-           players = bet t 1;
-           pots = t.pots + 1;
-  }
+                 && t.cur_bet = 0) then state_checker (bet t smallBlindInit)
   else if (t.round = 0 && (find_player t).role= BigBlind 
-           && t.cur_bet < 2) then state_checker {
-      t with cur_player = next_player t; 
-             cur_bet = 2;
-             players = bet t 2;
-             pots = t.pots + 2;
-    }
-  else state_checker {
-      t with cur_player = next_player t;
-             players = bet t t.cur_bet;
-             pots = t.pots + t.cur_bet;
-    }
+           && t.cur_bet < 2) then state_checker (bet t bigBlindInit)
+  else state_checker (bet t t.cur_bet)
 
 let check t = if (t.cur_bet <> 0) then raise CannotCheck
   else if (t.round = 0 && (find_player t).role= SmallBlind 
@@ -186,6 +185,8 @@ let string_of_role = function
   |SmallBlind -> "SmallBlind"
   |Normal -> "Normal"
 
+let string_of_cur_pot st = string_of_int st.pots
+
 let string_of st = 
   let player_decr = 
     List.fold_left (fun str pl ->
@@ -205,4 +206,5 @@ let string_of st =
         str ^ " " ^ Card.string_of c )
       "" st.community
   )
+  ^ "\n The amount in the pots is: " ^ (string_of_cur_pot st)
   ^ "\n we are at round :" ^ (string_of_int st.round)
