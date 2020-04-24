@@ -1,4 +1,4 @@
-MODULES=card deck hand authors testexamples
+MODULES=card deck hand authors command testexamples state main
 OBJECTS=$(MODULES:=.cmo)
 MLS=$(MODULES:=.ml)
 MLIS=$(MODULES:=.mli)
