@@ -137,7 +137,8 @@ let call t = if (t.round = 0 && (find_player t).role= SmallBlind
     }
 
 let check t = if (t.cur_bet <> 0) then raise CannotCheck
-else if 
+  else if (t.round = 0 && (find_player t).role= SmallBlind 
+           && t.cur_bet = 0) then raise BlindCheck
   else {
     t with cur_player = next_player t
   }
