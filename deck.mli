@@ -15,7 +15,7 @@ val size : t -> int
     returns [None] if it is an empty deck
     [Some c] if there are cards left 
 *)
-val deal : t -> Card.t option
+val deal : t -> Card.t option * t
 
 (** [shuffle d] is the deck [d] after shuffling*)
 val shuffle : t -> t
