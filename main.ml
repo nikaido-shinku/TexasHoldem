@@ -54,7 +54,7 @@ let parse_check st =
       the game.")
   |CannotCheck ->
     Stdlib.raise 
-      (Invalid_argument "you have not matched your bet yet, cannot check") 
+      (InvalidCommand "you have not matched your bet yet, cannot check") 
 
 (** [parse_exit st] parses a exit command for the current player on [st]*)
 let parse_exit st = 

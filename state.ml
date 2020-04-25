@@ -98,6 +98,8 @@ let action_ok t = List.for_all (fun x -> x.action) t.players
 (** [reset_action pl] resets all the actions for players in [pl]*)
 let reset_action pl = List.map (fun x -> {x with action = false}) pl
 
+(** [conclude t] conclude a game, given the final state is [t] and start a 
+    new game. *)
 let conclude t = 
   let a_players = t.all_players in 
   let winners = fst (Hand.highest_hand t.community 
@@ -245,9 +247,8 @@ let check t = if (t.cur_bet <> (find_player t).cur_bet) then raise CannotCheck
            && t.cur_bet = smallBlindInit) then raise BlindCheck
   else state_checker (bet t t.cur_bet)
 
-let raise x t = if (t.cur_bet <> (find_player t).cur_bet) then raise CannotCheck
-  else if (t.round = 0 && (find_player t).role= SmallBlind 
-           && t.cur_bet = 0) then raise BlindRaise
+let raise x t = if (t.round = 0 && (find_player t).role= SmallBlind 
+                    && t.cur_bet = 0) then raise BlindRaise
   else if (t.round = 0 && (find_player t).role= BigBlind 
            && t.cur_bet = smallBlindInit) then raise BlindRaise
   else state_checker (bet t (t.cur_bet + x))
