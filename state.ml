@@ -121,6 +121,7 @@ let conclude t =
     {
       p with 
       cur_bet = 0;
+      action = false;
       hand = Hand.empty;
     } in 
   let new_all_players_w_ch = 
