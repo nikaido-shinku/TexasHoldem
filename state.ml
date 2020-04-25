@@ -37,6 +37,8 @@ exception BlindFold
 
 exception BlindCheck
 
+exception BlindRaise
+
 exception NotEnoughMoney
 
 exception CannotCheck
@@ -188,6 +190,10 @@ let state_checker t =
       }
   else t
 
+(** [bet t n] steps the current state [t] after the current player changes 
+    their current bet to n. 
+    Raises: NotEnoughMoney when the current player doesn't have enough money for
+     changing their current bet to n. *)
 let bet t n = 
   (* Printf.printf "%s%d" "the value of n is: " n ;  *)
   { t with players = List.map 
@@ -239,9 +245,20 @@ let check t = if (t.cur_bet <> (find_player t).cur_bet) then raise CannotCheck
            && t.cur_bet = smallBlindInit) then raise BlindCheck
   else state_checker (bet t t.cur_bet)
 
-let raise x t = failwith "unimplemented"
+let raise x t = if (t.cur_bet <> (find_player t).cur_bet) then raise CannotCheck
+  else if (t.round = 0 && (find_player t).role= SmallBlind 
+           && t.cur_bet = 0) then raise BlindRaise
+  else if (t.round = 0 && (find_player t).role= BigBlind 
+           && t.cur_bet = smallBlindInit) then raise BlindRaise
+  else state_checker (bet t (t.cur_bet + x))
 
-let exit t = failwith "unimplemented"
+let exit t = state_checker {
+    t with 
+    all_players = List.filter (fun x -> x.name <> t.cur_player) 
+        t.all_players;
+    players = List.filter (fun x -> x.name <> t.cur_player) t.players;
+    cur_player = next_player t;
+  }
 
 (**[initial_playerlist nl] initialize the player's states at the start of the 
    round given the names [nl] and the [deck] after dealing the cards*)
