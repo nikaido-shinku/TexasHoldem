@@ -10,11 +10,14 @@ type player_id = string
 (**[t] is the type of the state of a game. *)
 type t
 
-(**Raised when small blind tries to fold at the start of a game. *)
+(**Raised when a blind tries to fold at the start of a game. *)
 exception BlindFold
 
-(**Raised when small blind tries to check at the start of a game. *)
+(**Raised when a blind tries to check at the start of a game. *)
 exception BlindCheck
+
+(**Raised when a blind tries to raise at the start of a game. *)
+exception BlindRaise
 
 (**Raised when a players bets more than they own. *)
 exception NotEnoughMoney

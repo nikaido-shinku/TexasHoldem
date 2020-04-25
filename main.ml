@@ -37,6 +37,10 @@ let parse_call st =
     current player on [st]*)
 let parse_raise st value =
   try raise value st with
+  |BlindRaise -> 
+    Stdlib.raise
+      (InvalidCommand "as one of the blinds, you cannot raise at the start of 
+      the game.")
   |NotEnoughMoney -> 
     Stdlib.raise
       (InvalidCommand "You don't have enough money to make the raise.")
