@@ -168,7 +168,7 @@ let test_hand = List.flatten [
         |> Hand.insert (Card.make_card HEART 8));
     ];
     List.map (test_hand_category "random straightflush" StraightFlush)
-      (example_straight_flush 100 100);
+      (example_straight_flush 100 10);
     List.map (test_hand_category "random straight" Straight)
       (example_straight 100 100);
     List.map (test_hand_category "random flush" Flush)
@@ -186,7 +186,10 @@ let test_hand = List.flatten [
   ] 
 
 
-let tests = List.flatten [test_card;test_hand]  
+let tests = List.flatten [
+    test_card;
+
+    test_hand]  
 
 let suite = "search test suite" >::: tests
 

@@ -1,4 +1,3 @@
-
 open Card
 open Hand
 
@@ -143,8 +142,9 @@ let rec make_hands acc count f =
 
 
 let random_straight_flush = 
+  print_endline "entered random_sraight_flush";
   let result = 
-    let init =   (Random.int 13 + 1) in 
+    let init =   (Random.int 9 + 1) in 
     let this_suit = random_suite (Random.int 4) in 
     Hand.empty
     |> Hand.insert (Card.make_card this_suit init)
@@ -153,7 +153,7 @@ let random_straight_flush =
     |> Hand.insert (Card.make_card this_suit (multi_step init 3))
     |> Hand.insert (Card.make_card this_suit (multi_step init 4))
   in 
-  (* print_string (Hand.string_of result); *)
+  print_endline (Hand.string_of result);
   result 
 
 
@@ -164,7 +164,7 @@ let example_straight_flush count seed =
 
 
 let random_straight = 
-  let init =   (Random.int 13 + 1) in 
+  let init =   (Random.int 9 + 1) in 
   let result = 
     Hand.empty
     |> Hand.insert (Card.make_card 
