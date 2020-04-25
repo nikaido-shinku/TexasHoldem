@@ -15,6 +15,7 @@ type player = {
   bid : int;
   cur_bet : int;
   hand : Hand.t;
+  action : bool;
 }
 
 (* type pot = (player_id * int) list  *)
@@ -86,6 +87,15 @@ let next_player t =
   let x = index t.cur_player id_list 0 in
   List.nth id_list ((x+1) mod List.length id_list)
 
+
+let find_player t = List.find (fun x -> x.name = t.cur_player) t.players
+
+(** [action_ok t] is whether all players in [t] have already taken action*)
+let action_ok t = List.for_all (fun x -> x.action) t.players
+
+(** [reset_action pl] resets all the actions for players in [pl]*)
+let reset_action pl = List.map (fun x -> {x with action = false}) pl
+
 let conclude t = 
   let a_players = t.all_players in 
   let winners = fst (Hand.highest_hand t.community 
@@ -111,22 +121,24 @@ let conclude t =
     } in 
   let new_all_players_w_ch = 
     List.map clear_hand (updated_player a_players winners) in 
-  let rec update_bs_blind ls mark = 
-    match ls with 
-    |[] -> []
-    |h::t -> (match h.role with 
-        | SmallBlind -> {h with role = BigBlind} :: update_bs_blind t true
-        | BigBlind -> {h with role = Normal} :: update_bs_blind t false
-        | Normal -> if mark 
-          then {h with role = SmallBlind} :: update_bs_blind t false
-          else h :: update_bs_blind t false
-      ) in
+  let rec update_bs_blind  acc ls = 
+    match ls , acc with 
+    |[] , _ -> acc
+    |h:: t, [] -> update_bs_blind [{h with role = SmallBlind}] t
+    |h::t, [x]  -> update_bs_blind  ({h with role = BigBlind} :: acc) t
+    |h :: t, _ ->update_bs_blind ({h with role = Normal} :: acc) t
+  in
+  let update pl = let sb = List.hd pl in 
+    pl |> List.tl |> List.rev |> List.cons sb |> List.rev 
+    |> update_bs_blind []
+  in 
   let new_all_p_w_role = 
-    let tail =  List.nth new_all_players_w_ch 
+    (* let tail =  List.nth new_all_players_w_ch 
         ((List.length new_all_players_w_ch)-1) in 
-    match tail.role with 
-    | SmallBlind -> update_bs_blind new_all_players_w_ch true 
-    | _ -> update_bs_blind new_all_players_w_ch false 
+       match tail.role with 
+       | SmallBlind -> update new_all_players_w_ch  
+       | _ -> *)
+    update new_all_players_w_ch 
   in 
   {
     t with 
@@ -140,31 +152,53 @@ let conclude t =
   }
 
 let state_checker t = 
-  if (t.round = 5) then conclude t
-  else if List.for_all (fun (x:player) -> x.cur_bet = t.cur_bet) t.players
+  if ( List.length t.players = 1) then conclude t
+  else if (List.for_all (fun (x:player) -> x.cur_bet = t.cur_bet) t.players
+           && action_ok t)
   then 
-    let card = t.deck |> shuffle |> deal in
-    {
-      t with 
-      round = t.round + 1;
-      (* cur_bet = 1; *)
-      deck = snd card;
-      community = 
-        match fst card with 
-          Some x -> x:: t.community
-        | None -> failwith "no card anymore";
-    }
+    if (t.round = 3 ) then conclude t
+    else if (t.round <> 0 ) then
+      let card = t.deck |> shuffle |> deal in
+      {
+        t with 
+        round = t.round + 1;
+        players = reset_action t.players;
+        (* cur_bet = 1; *)
+        deck = snd card;
+        community = 
+          match fst card with 
+            Some x -> x:: t.community
+          | None -> failwith "no card anymore";
+
+      }
+    else  let (card1, deck1) = t.deck |> shuffle |> deal in
+      let (card2, deck2) = deck1 |> deal in 
+      let (card3,deck3) = deck2 |> deal in 
+      {
+        t with 
+        round = t.round + 1;
+
+        players = reset_action t.players;
+        (* cur_bet = 1; *)
+        deck = deck3;
+        community = 
+          match  card1 , card2 , card3 with 
+          |  Some x1 , Some x2, Some x3 -> x3::x2 ::x1 :: t.community
+          | _ -> failwith "no card anymore";
+      }
   else t
 
-let find_player t = List.find (fun x -> x.name = t.cur_player) t.players
-
-let bet t n = Printf.printf "%s%d" "the value of n is: " n ; 
+let bet t n = 
+  (* Printf.printf "%s%d" "the value of n is: " n ;  *)
   { t with players = List.map 
                (fun x -> if x.name = t.cur_player then 
                    (if x.bid - (n-x.cur_bet) < 0 then 
                       raise NotEnoughMoney 
-                    else {x with bid = x.bid - (n-x.cur_bet); 
-                                 cur_bet = n}) 
+                    else {x with 
+                          bid = x.bid - (n-x.cur_bet); 
+                          cur_bet = n;
+                          action = true;
+                         }) 
                  else x) 
                t.players;
            all_players = List.map 
@@ -203,19 +237,17 @@ let check t = if (t.cur_bet <> (find_player t).cur_bet) then raise CannotCheck
            && t.cur_bet = 0) then raise BlindCheck
   else if (t.round = 0 && (find_player t).role= BigBlind 
            && t.cur_bet = smallBlindInit) then raise BlindCheck
-  else {
-    t with cur_player = next_player t
-  }
+  else state_checker (bet t t.cur_bet)
 
 let raise x t = failwith "unimplemented"
 
 let exit t = failwith "unimplemented"
 
 (**[initial_playerlist nl] initialize the player's states at the start of the 
-   round given the names [nl] *)
+   round given the names [nl] and the [deck] after dealing the cards*)
 let rec initial_playerlist nl deck pl= 
   match nl with 
-  |[] -> pl
+  |[] -> pl , deck
   | h :: t -> let (card_1, deck_1) = Deck.deal deck in 
     let (card_2, deck_2) = Deck.deal deck_1 in 
     let temp_player =
@@ -233,6 +265,7 @@ let rec initial_playerlist nl deck pl=
                Hand.insert 
                  (match card_2 with Some x -> x 
                                   | None -> Stdlib.raise NoMoreCard);
+        action = false;
       } in 
     initial_playerlist t deck_2 (temp_player::pl)
 
@@ -241,14 +274,18 @@ let init_state str =
            String.split_on_char ' '
            |> List.filter ((<>) "") in 
   if (nl = []) then Stdlib.raise EmptyPlayers 
-  else let playerlist = initial_playerlist nl (Deck.shuffle standard_deck) [] in
+  else let (playerlist , deck) = 
+         initial_playerlist nl (Deck.shuffle standard_deck) [] 
+    in
+    let new_players = List.rev playerlist 
+    in
     {
       round = 0;
-      all_players = playerlist;
-      players = playerlist;
+      all_players = new_players;
+      players = new_players;
       cur_player = List.hd nl ;
       cur_bet = 0;
-      deck = standard_deck ;
+      deck = deck ;
       pots = 0;
       community = [];
     }
