@@ -48,4 +48,4 @@ docs-private: build
 
 clean:
 	ocamlbuild -clean
-	rm -rf doc.public doc.private report texas_holdem.zip bisect*.out
+	rm -rf doc.public doc.private report texas_holdem.zip bisect*.out bisect*.coverage

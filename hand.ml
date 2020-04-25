@@ -151,7 +151,7 @@ let category_of h =
 
 
 let string_of h = 
-  List.fold_left (fun s c -> s ^ (Card.string_of c)) "" h
+  List.fold_left (fun s c -> s ^ (Card.string_of c) ^ "\n ")  "" h
 
 let to_list h = h
 
