@@ -86,15 +86,58 @@ let next_player t =
   let x = index t.cur_player id_list 0 in
   List.nth id_list ((x+1) mod List.length id_list)
 
-let conclude t = {
-  t with 
-  round = 0; 
-  players = t.all_players;
-  cur_bet = 0;
-  deck = standard_deck;
-  pots = 0;
-  community = [];
-}
+let conclude t = 
+  let a_players = t.all_players in 
+  let winners = fst (Hand.highest_hand t.community 
+                       (List.map (fun x -> x.hand) t.players)) in
+  let number_of_winner = List.length winners in 
+  let update_player p = {
+    p with 
+    bid = p.bid + (t.pots)/number_of_winner;
+  } in 
+  let rec change_p_in_list ind ls = 
+    match ls with 
+    |[] -> []
+    |h::t ->  if (ind = 0) then (update_player h) :: t else 
+        h:: (change_p_in_list (ind-1) t) in 
+  let rec updated_player ap win = match win with 
+    |[] -> ap
+    |h:: t -> updated_player (change_p_in_list h ap) t in 
+  let clear_hand p = 
+    {
+      p with 
+      cur_bet = 0;
+      hand = Hand.empty;
+    } in 
+  let new_all_players_w_ch = 
+    List.map clear_hand (updated_player a_players winners) in 
+  let rec update_bs_blind ls mark = 
+    match ls with 
+    |[] -> []
+    |h::t -> (match h.role with 
+        | SmallBlind -> {h with role = BigBlind} :: update_bs_blind t true
+        | BigBlind -> {h with role = Normal} :: update_bs_blind t false
+        | Normal -> if mark 
+          then {h with role = SmallBlind} :: update_bs_blind t false
+          else h :: update_bs_blind t false
+      ) in
+  let new_all_p_w_role = 
+    let tail =  List.nth new_all_players_w_ch 
+        ((List.length new_all_players_w_ch)-1) in 
+    match tail.role with 
+    | SmallBlind -> update_bs_blind new_all_players_w_ch true 
+    | _ -> update_bs_blind new_all_players_w_ch false 
+  in 
+  {
+    t with 
+    round = 0; 
+    all_players = new_all_p_w_role ;
+    players = new_all_p_w_role;
+    cur_bet = 0;
+    deck = standard_deck;
+    pots = 0;
+    community = [];
+  }
 
 let state_checker t = 
   if (t.round = 5) then conclude t
@@ -104,7 +147,7 @@ let state_checker t =
     {
       t with 
       round = t.round + 1;
-      cur_bet = 1;
+      (* cur_bet = 1; *)
       deck = snd card;
       community = 
         match fst card with 
@@ -115,18 +158,27 @@ let state_checker t =
 
 let find_player t = List.find (fun x -> x.name = t.cur_player) t.players
 
-let bet t n = { t with players = List.map 
-                           (fun x -> if x.name = t.cur_player then 
-                               (if x.bid - (n-x.cur_bet) < 0 then 
-                                  raise NotEnoughMoney 
-                                else {x with bid = x.bid - (n-x.cur_bet); 
-                                             cur_bet = n}) 
-                             else x) 
-                           t.players;
-                       cur_player = next_player t;
-                       cur_bet = max t.cur_bet n;
-                       pots = t.pots + n - (find_player t).cur_bet;
-              }
+let bet t n = Printf.printf "%s%d" "the value of n is: " n ; 
+  { t with players = List.map 
+               (fun x -> if x.name = t.cur_player then 
+                   (if x.bid - (n-x.cur_bet) < 0 then 
+                      raise NotEnoughMoney 
+                    else {x with bid = x.bid - (n-x.cur_bet); 
+                                 cur_bet = n}) 
+                 else x) 
+               t.players;
+           all_players = List.map 
+               (fun x -> if x.name = t.cur_player then 
+                   (if x.bid - (n-x.cur_bet) < 0 then 
+                      raise NotEnoughMoney 
+                    else {x with bid = x.bid - (n-x.cur_bet); 
+                                 cur_bet = n}) 
+                 else x) 
+               t.all_players;
+           cur_player = next_player t;
+           cur_bet = max t.cur_bet n;
+           pots = t.pots + n - (find_player t).cur_bet;
+  }
 
 
 let fold t = if (t.round = 0 && (find_player t).role= SmallBlind 
@@ -146,7 +198,7 @@ let call t = if (t.round = 0 && (find_player t).role= SmallBlind
            && t.cur_bet < 2) then state_checker (bet t bigBlindInit)
   else state_checker (bet t t.cur_bet)
 
-let check t = if (t.cur_bet <> 0) then raise CannotCheck
+let check t = if (t.cur_bet <> (find_player t).cur_bet) then raise CannotCheck
   else if (t.round = 0 && (find_player t).role= SmallBlind 
            && t.cur_bet = 0) then raise BlindCheck
   else if (t.round = 0 && (find_player t).role= BigBlind 
