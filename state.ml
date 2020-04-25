@@ -125,6 +125,7 @@ let conclude t =
     } in 
   let new_all_players_w_ch = 
     List.map clear_hand (updated_player a_players winners) in 
+  print_endline (string_of_int (List.length new_all_players_w_ch));
   let rec update_bs_blind  acc ls = 
     match ls , acc with 
     |[] , _ -> acc
@@ -132,9 +133,13 @@ let conclude t =
     |h::t, [x]  -> update_bs_blind  ({h with role = BigBlind} :: acc) t
     |h :: t, _ ->update_bs_blind ({h with role = Normal} :: acc) t
   in
-  let update pl = let sb = List.hd pl in 
+  let update pl = 
+    let sb =
+      match pl with 
+      |[] -> failwith "pl is empty"
+      | a ->List.hd pl in 
     pl |> List.tl |> List.rev |> List.cons sb |> List.rev 
-    |> update_bs_blind []
+    |> update_bs_blind [] |> List.rev
   in 
   let new_all_p_w_role = 
     (* let tail =  List.nth new_all_players_w_ch 
@@ -301,7 +306,7 @@ let init_state str =
       round = 0;
       all_players = new_players;
       players = new_players;
-      cur_player = List.hd nl ;
+      cur_player = List.hd nl;
       cur_bet = 0;
       deck = deck ;
       pots = 0;
