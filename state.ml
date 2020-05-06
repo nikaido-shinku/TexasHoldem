@@ -98,75 +98,117 @@ let action_ok t = List.for_all (fun x -> x.action) t.players
 (** [reset_action pl] resets all the actions for players in [pl]*)
 let reset_action pl = List.map (fun x -> {x with action = false}) pl
 
-(** [conclude t] conclude a game, given the final state is [t] and start a 
+(** [conclude t folded] conclude a game, given the final state is [t] and 
+    the game was ended by if [folded] then folding or comparing,
+    and start a 
     new game. *)
-let conclude t = 
-  let a_players = t.all_players in 
-  let winners = fst (Hand.highest_hand t.community 
-                       (List.map (fun x -> x.hand) t.players)) in
-  let number_of_winner = List.length winners in 
-  let update_player p = {
-    p with 
-    bid = p.bid + (t.pots)/number_of_winner;
-  } in 
-  let rec change_p_in_list ind ls = 
-    match ls with 
-    |[] -> []
-    |h::t ->  if (ind = 0) then (update_player h) :: t else 
-        h:: (change_p_in_list (ind-1) t) in 
-  let rec updated_player ap win = match win with 
-    |[] -> ap
-    |h:: t -> updated_player (change_p_in_list h ap) t in 
-  let clear_hand p = 
-    {
+let conclude t folded= 
+  if not folded then
+    let a_players = t.all_players in 
+    let winners = fst (Hand.highest_hand t.community 
+                         (List.map (fun x -> x.hand) t.players)) in
+    let number_of_winner = List.length winners in 
+    let update_player p = {
       p with 
-      cur_bet = 0;
-      action = false;
-      hand = Hand.empty;
+      bid = p.bid + (t.pots)/number_of_winner;
     } in 
-  let new_all_players_w_ch = 
-    List.map clear_hand (updated_player a_players winners) in 
-  print_endline (string_of_int (List.length new_all_players_w_ch));
-  let rec update_bs_blind  acc ls = 
-    match ls , acc with 
-    |[] , _ -> acc
-    |h:: t, [] -> update_bs_blind [{h with role = SmallBlind}] t
-    |h::t, [x]  -> update_bs_blind  ({h with role = BigBlind} :: acc) t
-    |h :: t, _ ->update_bs_blind ({h with role = Normal} :: acc) t
-  in
-  let update pl = 
-    let sb =
-      match pl with 
-      |[] -> failwith "pl is empty"
-      | a ->List.hd pl in 
-    pl |> List.tl |> List.rev |> List.cons sb |> List.rev 
-    |> update_bs_blind [] |> List.rev
-  in 
-  let new_all_p_w_role = 
-    (* let tail =  List.nth new_all_players_w_ch 
-        ((List.length new_all_players_w_ch)-1) in 
-       match tail.role with 
-       | SmallBlind -> update new_all_players_w_ch  
-       | _ -> *)
-    update new_all_players_w_ch 
-  in 
-  {
-    t with 
-    round = 0; 
-    all_players = new_all_p_w_role ;
-    players = new_all_p_w_role;
-    cur_bet = 0;
-    deck = standard_deck;
-    pots = 0;
-    community = [];
-  }
+    let rec change_p_in_list ind ls = 
+      match ls with 
+      |[] -> []
+      |h::t ->  if (ind = 0) then (update_player h) :: t else 
+          h:: (change_p_in_list (ind-1) t) in 
+    let rec updated_player ap win = match win with 
+      |[] -> ap
+      |h:: t -> updated_player (change_p_in_list h ap) t in 
+    let clear_hand p = 
+      {
+        p with 
+        cur_bet = 0;
+        action = false;
+        hand = Hand.empty;
+      } in 
+    let new_all_players_w_ch = 
+      List.map clear_hand (updated_player a_players winners) in 
+    print_endline (string_of_int (List.length new_all_players_w_ch));
+    let rec update_bs_blind  acc ls = 
+      match ls , acc with 
+      |[] , _ -> acc
+      |h:: t, [] -> update_bs_blind [{h with role = SmallBlind}] t
+      |h::t, [x]  -> update_bs_blind  ({h with role = BigBlind} :: acc) t
+      |h :: t, _ ->update_bs_blind ({h with role = Normal} :: acc) t
+    in
+    let update pl = 
+      let sb =
+        match pl with 
+        |[] -> failwith "pl is empty"
+        | a ->List.hd pl in 
+      pl |> List.tl |> List.rev |> List.cons sb |> List.rev 
+      |> update_bs_blind [] |> List.rev
+    in 
+    let new_all_p_w_role = 
+      (* let tail =  List.nth new_all_players_w_ch 
+          ((List.length new_all_players_w_ch)-1) in 
+         match tail.role with 
+         | SmallBlind -> update new_all_players_w_ch  
+         | _ -> *)
+      update new_all_players_w_ch 
+    in 
+    {
+      t with 
+      round = 0; 
+      all_players = new_all_p_w_role ;
+      players = new_all_p_w_role;
+      cur_bet = 0;
+      deck = standard_deck;
+      pots = 0;
+      community = [];
+    }
+  else 
+    let clear_hand p = 
+      {
+        p with 
+        cur_bet = 0;
+        action = false;
+        hand = Hand.empty;
+      } in 
+    let new_all_players_w_ch = 
+      List.map clear_hand (t.all_players) in 
+    print_endline (string_of_int (List.length new_all_players_w_ch));
+    let rec update_bs_blind  acc ls = 
+      match ls , acc with 
+      |[] , _ -> acc
+      |h:: t, [] -> update_bs_blind [{h with role = SmallBlind}] t
+      |h::t, [x]  -> update_bs_blind  ({h with role = BigBlind} :: acc) t
+      |h :: t, _ ->update_bs_blind ({h with role = Normal} :: acc) t
+    in
+    let update pl = 
+      let sb =
+        match pl with 
+        |[] -> failwith "pl is empty"
+        | a ->List.hd pl in 
+      pl |> List.tl |> List.rev |> List.cons sb |> List.rev 
+      |> update_bs_blind [] |> List.rev
+    in 
+    let new_all_p_w_role = 
+      update new_all_players_w_ch 
+    in 
+    {
+      t with 
+      round = 0; 
+      all_players = new_all_p_w_role ;
+      players = new_all_p_w_role;
+      cur_bet = 0;
+      deck = standard_deck;
+      pots = 0;
+      community = [];
+    }
 
 let state_checker t = 
-  if ( List.length t.players = 1) then conclude t
+  if ( List.length t.players = 1) then conclude t true
   else if (List.for_all (fun (x:player) -> x.cur_bet = t.cur_bet) t.players
            && action_ok t)
   then 
-    if (t.round = 3 ) then conclude t
+    if (t.round = 3 ) then conclude t false
     else if (t.round <> 0 ) then
       let card = t.deck |> shuffle |> deal in
       {
