@@ -28,6 +28,9 @@ exception CannotCheck
 (** Raised when initialized with an empty player list*)
 exception EmptyPlayers
 
+(** Raised when current player raises the bet above the max bet of the game. *)
+exception ExceedBet of int
+
 (**[fold t] steps the current state [t] of the game when the current player 
    folds. *)
 val fold : t -> t
