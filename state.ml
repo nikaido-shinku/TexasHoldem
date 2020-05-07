@@ -286,7 +286,7 @@ let conclude t folded=
                                       | None -> Stdlib.raise NoMoreCard);
           } in  
           deck_2,new_pl::ap
-        ) (standard_deck,[]) new_all_p_w_role in 
+        ) (Deck.shuffle standard_deck,[]) new_all_p_w_role in 
     {
       t with 
       round = 0; 
@@ -344,7 +344,7 @@ let conclude t folded=
                                       | None -> Stdlib.raise NoMoreCard);
           } in  
           deck_2,new_pl::ap
-        ) (standard_deck,[]) new_all_p_w_role in 
+        ) (Deck.shuffle standard_deck,[]) new_all_p_w_role in 
 
     {
       t with 
