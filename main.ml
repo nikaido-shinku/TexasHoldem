@@ -58,7 +58,7 @@ let parse_check st =
 
 (** [parse_exit st] parses a exit command for the current player on [st]*)
 let parse_exit st = 
-  exit st
+  try exit st with TimeToQuit -> print_string "bye\n"; Stdlib.exit 0
 
 
 (** [game_command st cmd] is the reulting state of 
@@ -110,8 +110,8 @@ let rec rec_game  (st: State.t) =
 (** [game nl] initialize the state with the name list [nl],
     and then starts playing the game 
 *)
-let game (nl: string)= 
-  rec_game (State.init_state nl)
+let game (st: string)= 
+  rec_game (State.init_state st)
 
 
 

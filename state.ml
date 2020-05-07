@@ -46,6 +46,8 @@ exception NoMoreCard
 
 exception ExceedBet of int
 
+exception TimeToQuit
+
 let standard_deck = 
   let rec helper k c = 
     if k = 0 then c 
@@ -56,10 +58,6 @@ let standard_deck =
                   Deck.insert (Card.make_card SPADE k) 
       in helper (k-1) c' 
   in helper 13 Deck.empty
-
-
-(** the default bids players start with *)
-let initial_bid = 100
 
 (** the base bet small blind has to pay at the start of a game *)
 let smallBlindInit = 1
@@ -463,8 +461,6 @@ let conclude t folded=
 
 
 
-
-
 let state_checker t = 
   if ( List.length t.players = 1) then conclude t true
   else if (List.for_all (fun (x:player) -> x.cur_bet = t.cur_bet) t.players
@@ -581,19 +577,21 @@ let raise x t = if (t.round = 0 && (find_player t).role= SmallBlind
   else state_checker (bet t (t.cur_bet + x))
 
 let exit t = 
-  let new_players = List.filter (fun x -> x.name <> t.cur_player) t.players in
-  state_checker {
-    t with 
-    all_players = List.filter (fun x -> x.name <> t.cur_player) 
-        t.all_players;
-    players = new_players ;
-    cur_player = next_player t;
-    max_bet = update_max_bet new_players;
-  }
+  if (List.length t.players = 1) then Stdlib.raise TimeToQuit
+  else 
+    let new_players = List.filter (fun x -> x.name <> t.cur_player) t.players in 
+    state_checker {
+      t with 
+      all_players = List.filter (fun x -> x.name <> t.cur_player) 
+          t.all_players;
+      players = new_players ;
+      cur_player = next_player t;
+      max_bet = update_max_bet new_players;
+    }
 
 (**[initial_playerlist nl] initialize the player's states at the start of the 
    round given the names [nl] and the [deck] after dealing the cards*)
-let rec initial_playerlist nl deck pl= 
+let rec initial_playerlist ib nl deck pl= 
   match nl with 
   |[] -> pl , deck
   | h :: t -> let (card_1, deck_1) = Deck.deal deck in 
@@ -605,7 +603,7 @@ let rec initial_playerlist nl deck pl=
             | [] -> SmallBlind
             | h :: [] -> BigBlind
             | _ -> Normal);
-        bid = initial_bid;
+        bid = ib;
         cur_bet = 0;
         hand = Hand.empty |> Hand.insert 
                  (match card_1 with Some x -> x 
@@ -615,29 +613,33 @@ let rec initial_playerlist nl deck pl=
                                   | None -> Stdlib.raise NoMoreCard);
         action = false;
       } in 
-    initial_playerlist t deck_2 (temp_player::pl)
+    initial_playerlist ib t deck_2 (temp_player::pl)
 
 let init_state str = 
   let nl = str |>
            String.split_on_char ' '
            |> List.filter ((<>) "") in 
-  if (nl = []) then Stdlib.raise EmptyPlayers 
-  else let (playerlist , deck) = 
-         initial_playerlist nl (Deck.shuffle standard_deck) [] 
-    in
-    let new_players = List.rev playerlist 
-    in
-    {
-      round = 0;
-      all_players = new_players;
-      players = new_players;
-      cur_player = List.hd nl;
-      cur_bet = 0;
-      deck = deck ;
-      community = [];
-      pots = [];
-      max_bet = initial_bid;
-    }
+  match nl with 
+  |[]-> Stdlib.raise EmptyPlayers
+  | h::t -> if t = [] then Stdlib.raise EmptyPlayers
+    else let ib = int_of_string h in
+      let (playerlist , deck) = 
+        initial_playerlist ib t (Deck.shuffle standard_deck) 
+          [] 
+      in
+      let new_players = List.rev playerlist 
+      in
+      {
+        round = 0;
+        all_players = new_players;
+        players = new_players;
+        cur_player = List.hd nl;
+        cur_bet = 0;
+        deck = deck ;
+        community = [];
+        pots = [];
+        max_bet = ib;
+      }
 
 (** [string_of_role r] is the string representation of role [r]*)
 let string_of_role = function
