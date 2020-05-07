@@ -129,7 +129,11 @@ let main () =
     else (); 
     print_endline "Please enter the player names separated by space\n";
     print_string  "> ";
-    try  read_line() |>  game  with 
+    let names = read_line() in 
+    print_endline "Please enter the initial bid for every player\n";
+    print_string "> ";
+    let init_bid = read_line() in 
+    try init_bid ^ " " ^names |>  game  with 
     | End_of_file -> ()
     | EmptyPlayers -> get_input false
   in 

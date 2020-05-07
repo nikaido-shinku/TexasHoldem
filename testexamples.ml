@@ -138,10 +138,10 @@ let examples_royal =
 
 let rec make_hands acc count f = 
   if count = 0 then acc else 
-    make_hands (f :: acc) (count-1) f
+    make_hands (f() :: acc) (count-1) (f)
 
 
-let random_straight_flush = 
+let random_straight_flush (_:unit)= 
   print_endline "entered random_sraight_flush";
   let result = 
     let init =   (Random.int 9 + 1) in 
@@ -163,7 +163,7 @@ let example_straight_flush count seed =
   make_hands [] count random_straight_flush
 
 
-let random_straight = 
+let random_straight (_:unit) = 
   let init =   (Random.int 9 + 1) in 
   let result = 
     Hand.empty
@@ -187,7 +187,7 @@ let example_straight count seed =
 
 
 
-let random_flush = 
+let random_flush (_:unit) = 
   let suit = 
     random_suite (Random.int 4) in 
   let init = Hand.empty in 
@@ -212,7 +212,7 @@ let example_flush count seed=
   make_hands [] count random_flush
 
 
-let random_four = 
+let random_four (_:unit) = 
   let r =  (Random.int 13 + 1) in 
   let result = 
     Hand.empty
@@ -236,7 +236,7 @@ let example_four count seed =
   make_hands [] count random_four
 
 
-let random_full = 
+let random_full  (_:unit) = 
   let r1 =  (Random.int 13 + 1) in 
   let r2 = (r1 +  random_shift_num) mod 13 + 1 in 
   let rec helper acc count = 
@@ -262,7 +262,7 @@ let example_full count seed =
   make_hands [] count random_full
 
 
-let random_three = 
+let random_three (_:unit) = 
   let rec helper acc count = 
     if count = 0 then acc
     else let r =   (Random.int 13) + 1 in 
@@ -285,7 +285,7 @@ let example_three count seed =
 
 
 
-let random_two_pair = 
+let random_two_pair (_:unit) = 
   let r1 =(Random.int 13) + 1 in
   let r2 =  (r1 + random_shift_num) mod 13 + 1 in 
   let r3 = (r1 + random_shift_num - 2) mod 13 + 1 in
@@ -305,7 +305,7 @@ let example_two_pair count seed =
 
 
 
-let random_pair = 
+let random_pair (_:unit) = 
   let rec helper acc count = 
     if count = 0 then acc
     else let r =   (Random.int 13) + 1 in 

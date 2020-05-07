@@ -102,7 +102,7 @@ let update_max_bet players =
   let temp_player = 
     (players |> 
      List.sort (fun x y -> y.bid + y.cur_bet - x.bid - x.cur_bet) |> 
-     (fun x -> List.nth x 2)) in
+     (fun x -> List.nth x 1)) in
   (temp_player.cur_bet + temp_player.bid)
 
 
@@ -132,6 +132,9 @@ let add_money_single_step (t) (apl) (pl:player list) pots =
   let number_of_winner = List.length winners in 
 
   let avg_add = add_total/number_of_winner in 
+
+
+
 
   let rec update_player (pl:player list)
       (apl: player list )
@@ -269,16 +272,31 @@ let conclude t folded=
          | _ -> *)
       update new_all_players_w_ch 
     in 
+    let (new_deck,apl) = 
+      List.fold_left (fun (deck,ap) (pl:player) -> 
+          let (card_1, deck_1) = Deck.deal deck in 
+          let (card_2, deck_2) = Deck.deal deck_1 in 
+          let new_pl = {
+            pl with 
+            hand = Hand.empty |> Hand.insert 
+                     (match card_1 with Some x -> x 
+                                      | None -> Stdlib.raise NoMoreCard) |> 
+                   Hand.insert 
+                     (match card_2 with Some x -> x 
+                                      | None -> Stdlib.raise NoMoreCard);
+          } in  
+          deck_2,new_pl::ap
+        ) (standard_deck,[]) new_all_p_w_role in 
     {
       t with 
       round = 0; 
-      all_players = new_all_p_w_role ;
-      players = new_all_p_w_role;
+      all_players = apl ;
+      players = apl;
       cur_bet = 0;
-      deck = standard_deck;
+      deck = new_deck;
       pots = [];
       community = [];
-      max_bet = update_max_bet new_all_p_w_role;
+      max_bet = update_max_bet apl;
     }
   else 
     let sum = List.fold_left (fun s (str,i) -> s+i) 0 t.pots in 
@@ -312,16 +330,32 @@ let conclude t folded=
     let new_all_p_w_role = 
       update new_all_players_w_ch 
     in 
+    let (new_deck,apl) = 
+      List.fold_left (fun (deck,ap) (pl:player) -> 
+          let (card_1, deck_1) = Deck.deal deck in 
+          let (card_2, deck_2) = Deck.deal deck_1 in 
+          let new_pl = {
+            pl with 
+            hand = Hand.empty |> Hand.insert 
+                     (match card_1 with Some x -> x 
+                                      | None -> Stdlib.raise NoMoreCard) |> 
+                   Hand.insert 
+                     (match card_2 with Some x -> x 
+                                      | None -> Stdlib.raise NoMoreCard);
+          } in  
+          deck_2,new_pl::ap
+        ) (standard_deck,[]) new_all_p_w_role in 
+
     {
       t with 
       round = 0; 
-      all_players = new_all_p_w_role ;
-      players = new_all_p_w_role;
+      all_players = apl;
+      players = apl;
       cur_bet = 0;
-      deck = standard_deck;
+      deck = new_deck;
       pots = [];
       community = [];
-      max_bet = update_max_bet new_all_p_w_role;
+      max_bet = update_max_bet apl;
     }
 (* if not folded then
    let a_players = t.all_players in 
@@ -611,8 +645,62 @@ let string_of_role = function
   |SmallBlind -> "SmallBlind"
   |Normal -> "Normal"
 
-let string_of_cur_pot st = List.fold_left 
-    (fun acc (s, i) -> acc ^ "\n" ^ (s ^ ": " ^ (string_of_int i))) "" st.pots 
+(** [pots_of acc pots] is [acc] attached with all the separate pots in [pots]
+
+    Requires: all the folded pots are already in [acc]
+    and pots should be sorted in increasing order
+*)
+let rec pots_of (acc, pots) = 
+  match pots with 
+  |[] -> acc
+  |(str,i)::_ -> 
+    let new_pots = 
+      pots |>  List.map (fun (name,bet) -> (name,bet - i)) in 
+    let name_list = new_pots |> List.map (fst) |> List.map (fun x -> (x,i))in 
+    let reduced_pots = 
+      new_pots |> List.filter (fun (name,bet) -> (bet <>0)) in 
+    pots_of ((name_list :: acc), reduced_pots)
+
+(** [has_separate_pots st] is whether [st] has more than one pots*)
+let has_separate_pots st =
+  List.exists (fun (p:player) -> p.bid = 0) st.players 
+
+
+(**[folded_pot st] is the largest pot in [st] that include all the folded 
+   bids tuple with the reduced pot*)
+let folded_pot st = 
+  if has_separate_pots st then
+    let name_list = List.map (fun p -> p.name) st.players in 
+    let min = (st.players
+               |> List.sort (fun (x:player) (y:player) -> x.cur_bet - y.cur_bet)
+               |> List.hd).cur_bet in 
+    let (folds,non_folds) = 
+      st.pots
+      |> List.fold_left
+        (fun (folds,non_folds) (name, bet) -> 
+           if List.mem (name) name_list then 
+             folds, (name, bet - min) :: non_folds
+           else (name, bet) :: folds, folds )
+        ([],[]) in
+    ( [(name_list |> List.map (fun name -> (name,min))) @ folds], 
+      non_folds|> List.filter (fun x -> (snd x) <> 0) |>
+      List.sort (fun x y -> snd x - snd y))
+  else 
+    [st.pots],[]
+
+
+(** [string_of_one_pot pot] is a string representation of a pot*)
+let string_of_one_pot pot = 
+  List.fold_left
+    (fun acc (s, i) -> acc ^ "  " ^ (s ^ ": " ^ (string_of_int i))) "" pot
+
+(** [string_of_cur_pot st] is the string representation of pots in [st]*)
+let string_of_cur_pot st = let pots = 
+                             st |> folded_pot |> pots_of in 
+  List.fold_left (fun decr pot -> decr ^"\n" ^ (string_of_one_pot pot)) "" pots
+
+
+
 
 let string_of st = 
   let player_decr = 
