@@ -31,6 +31,9 @@ exception EmptyPlayers
 (** Raised when current player raises the bet above the max bet of the game. *)
 exception ExceedBet of int
 
+(** Raised when there is no more player playing. *)
+exception TimeToQuit 
+
 (**[fold t] steps the current state [t] of the game when the current player 
    folds. *)
 val fold : t -> t

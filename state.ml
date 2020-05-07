@@ -46,6 +46,8 @@ exception NoMoreCard
 
 exception ExceedBet of int
 
+exception TimeToQuit
+
 let standard_deck = 
   let rec helper k c = 
     if k = 0 then c 
@@ -179,7 +181,8 @@ let conclude t =
 
 
 let state_checker t = 
-  if ( List.length t.players = 1) then conclude t
+  if (List.length t.players = 0) then raise TimeToQuit
+  else if ( List.length t.players = 1) then conclude t
   else if (List.for_all (fun (x:player) -> x.cur_bet = t.cur_bet) t.players
            && action_ok t)
   then 
