@@ -97,11 +97,14 @@ let reset_action pl = List.map (fun x -> {x with action = false}) pl
 (**  [update_max_bet t] is the maximum current bet a player can have in a game. 
 *)
 let update_max_bet players = 
-  let temp_player = 
-    (players |> 
-     List.sort (fun x y -> y.bid + y.cur_bet - x.bid - x.cur_bet) |> 
-     (fun x -> List.nth x 1)) in
-  (temp_player.cur_bet + temp_player.bid)
+  match players with 
+  |[] -> failwith "update_max_bet with empty players"
+  |h::[] -> h.bid + h.cur_bet
+  |_ ->let temp_player = 
+         (players |> 
+          List.sort (fun x y -> y.bid + y.cur_bet - x.bid - x.cur_bet) |> 
+          (fun x -> List.nth x 1)) in
+    (temp_player.cur_bet + temp_player.bid)
 
 
 (** [add_money_single_step pl pots] finds the smalles bet paid,
