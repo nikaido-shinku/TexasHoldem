@@ -133,7 +133,7 @@ let main () =
     print_endline "Please enter the initial bid for every player\n";
     print_string "> ";
     let init_bid = read_line() in 
-    try init_bid ^ " " ^names |>  game  with 
+    try init_bid ^ " " ^ names |>  game  with 
     | End_of_file -> ()
     | EmptyPlayers -> get_input false
   in 

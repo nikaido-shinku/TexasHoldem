@@ -616,10 +616,10 @@ let rec initial_playerlist ib nl deck pl=
     initial_playerlist ib t deck_2 (temp_player::pl)
 
 let init_state str = 
-  let nl = str |>
+  let lt = str |>
            String.split_on_char ' '
            |> List.filter ((<>) "") in 
-  match nl with 
+  match lt with 
   |[]-> Stdlib.raise EmptyPlayers
   | h::t -> if t = [] then Stdlib.raise EmptyPlayers
     else let ib = int_of_string h in
@@ -633,7 +633,7 @@ let init_state str =
         round = 0;
         all_players = new_players;
         players = new_players;
-        cur_player = List.hd nl;
+        cur_player = List.hd t;
         cur_bet = 0;
         deck = deck ;
         community = [];
