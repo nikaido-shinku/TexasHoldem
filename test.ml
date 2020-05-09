@@ -187,7 +187,7 @@ let test_hand = List.flatten [
 
 
 let tests = List.flatten [
-    test_card;
+    (* test_card; *)
 
     test_hand]  
 
