@@ -48,6 +48,8 @@ exception ExceedBet of int
 
 exception TimeToQuit
 
+exception NoEnoughPlayer
+
 let standard_deck = 
   let rec helper k c = 
     if k = 0 then c 
@@ -222,8 +224,21 @@ let add_money_fold t apl pl pots =
 
 
 
-
-
+(**[ask_whether_continue t] will ask every play in [t] whether 
+   they want to continue in the following game, if they want to quit the entire 
+   game, type "quit" *)
+let rec ask_whether_continue (all_player: player list)  = 
+  match all_player with 
+  |[] -> []
+  |h ::t -> (
+      print_endline ("player "^ h.name ^ 
+                     ", do you want to quit the game?[y/n]");
+      match read_line() with 
+      |"y" -> ask_whether_continue t
+      |"n" -> h::(ask_whether_continue t)
+      |_ -> print_endline "please type \"y\" or \"n\"";
+        ask_whether_continue all_player
+    )
 
 
 
@@ -285,17 +300,19 @@ let conclude t folded=
           } in  
           deck_2,new_pl::ap
         ) (Deck.shuffle standard_deck,[]) new_all_p_w_role in 
-    {
-      t with 
-      round = 0; 
-      all_players = apl ;
-      players = apl;
-      cur_bet = 0;
-      deck = new_deck;
-      pots = [];
-      community = [];
-      max_bet = update_max_bet apl;
-    }
+    let updated_apl = ask_whether_continue apl in 
+    if (List.length updated_apl < 2) then failwith "No enough players." else
+      {
+        t with 
+        round = 0; 
+        all_players = updated_apl ;
+        players = updated_apl;
+        cur_bet = 0;
+        deck = new_deck;
+        pots = [];
+        community = [];
+        max_bet = update_max_bet apl;
+      }
   else 
     let sum = List.fold_left (fun s (str,i) -> s+i) 0 t.pots in 
     let new_apl = List.map (fun x -> if (x.name = (List.hd t.players).name)
@@ -343,18 +360,19 @@ let conclude t folded=
           } in  
           deck_2,new_pl::ap
         ) (Deck.shuffle standard_deck,[]) new_all_p_w_role in 
-
-    {
-      t with 
-      round = 0; 
-      all_players = apl;
-      players = apl;
-      cur_bet = 0;
-      deck = new_deck;
-      pots = [];
-      community = [];
-      max_bet = update_max_bet apl;
-    }
+    let updated_apl = ask_whether_continue apl in 
+    if (List.length updated_apl < 2) then failwith "No enough players." else
+      {
+        t with 
+        round = 0; 
+        all_players = updated_apl;
+        players = updated_apl;
+        cur_bet = 0;
+        deck = new_deck;
+        pots = [];
+        community = [];
+        max_bet = update_max_bet apl;
+      }
 (* if not folded then
    let a_players = t.all_players in 
    let winners = fst (Hand.highest_hand t.community 
@@ -621,7 +639,7 @@ let init_state str =
            |> List.filter ((<>) "") in 
   match lt with 
   |[]-> Stdlib.raise EmptyPlayers
-  | h::t -> if t = [] then Stdlib.raise EmptyPlayers
+  | h::t -> if (List.length t <2) then Stdlib.raise NoEnoughPlayer
     else let ib = int_of_string h in
       let (playerlist , deck) = 
         initial_playerlist ib t (Deck.shuffle standard_deck) 

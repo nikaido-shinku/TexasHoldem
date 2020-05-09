@@ -34,6 +34,9 @@ exception ExceedBet of int
 (** Raised when there is no more player playing. *)
 exception TimeToQuit 
 
+(** Raised when the number of players is fewer than 2*)
+exception NoEnoughPlayer
+
 (**[fold t] steps the current state [t] of the game when the current player 
    folds. *)
 val fold : t -> t
