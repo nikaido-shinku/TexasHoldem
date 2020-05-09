@@ -97,15 +97,24 @@ let out_put_description st =
 *)
 
 let rec rec_game  (st: State.t) = 
+  print_endline "Please pass the computer to next player.\n";
+  print_endline ">\n>\n>\n>\n>\n>\n>\n>\n>\n>\n>\n>\n>\n>\n>\n>\n>\n>\n>\n";
+  print_endline "Please press return when you're ready for your round.\n";
+  print_string  "> ";
+  let rand = read_line() in print_endline rand;
   print_string padding;
   ANSITerminal.(print_string [green] (out_put_description st ^ "\n"));
   ANSITerminal.(print_string [blue] instruct);
   print_string  "> ";
-  try read_line () |> valid_command |> game_command st |> rec_game 
-  with
-  | End_of_file -> ()
-  | InvalidCommand str -> ANSITerminal.(print_string [red] (str^ "\n") );
-    rec_game st
+  let current_command = read_line () in (
+
+    try current_command |> valid_command |> game_command st |> rec_game 
+    with
+    | End_of_file -> ()
+    | InvalidCommand str -> ANSITerminal.(print_string [red] (str^ "\n") );
+      rec_game st
+  )
+
 
 (** [game nl] initialize the state with the name list [nl],
     and then starts playing the game 
@@ -125,7 +134,7 @@ let main () =
 
   let rec get_input b = 
     if not b then
-      ANSITerminal.(print_string [red] "\n You have entered empty names\n")
+      ANSITerminal.(print_string [red] "\n You need at least 2 players.\n")
     else (); 
     print_endline "Please enter the player names separated by space\n";
     print_string  "> ";
@@ -135,7 +144,7 @@ let main () =
     let init_bid = read_line() in 
     try init_bid ^ " " ^ names |>  game  with 
     | End_of_file -> ()
-    | EmptyPlayers -> get_input false
+    | NoEnoughPlayer -> get_input false
   in 
   get_input true
 
