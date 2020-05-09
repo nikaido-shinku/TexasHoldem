@@ -308,7 +308,7 @@ let conclude t folded=
           deck_2,new_pl::ap
         ) (Deck.shuffle standard_deck,[]) new_all_p_w_role in 
 
-    if (List.length apl < 2) then failwith "No enough players." else
+    if (List.length apl < 2) then raise NoEnoughPlayer else
       {
 
         round = 0; 
@@ -377,7 +377,7 @@ let conclude t folded=
           deck_2,new_pl::ap
         ) (Deck.shuffle standard_deck,[]) new_all_p_w_role in 
 
-    if (List.length apl < 2) then failwith "No enough players." else
+    if (List.length apl < 2) then raise NoEnoughPlayer else
       {
         cur_player = (List.hd apl).name;
         round = 0; 
