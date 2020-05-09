@@ -74,13 +74,13 @@ let is_flush h =
 *)
 let straight_ranks (rl: rank list) = 
   let init = List.hd rl - 1 in 
-  if init+1 = 2 then rl = [2;3;4;5;1]
+  if init = 1 then rl = [2;3;4;5;1] || rl = [2;3;4;5;6]
   else 
     rl 
     |> List.fold_left
       (fun (p,b) r -> 
          if not b then (p,b) 
-         else if r-1 = (p mod 13) then (r,b) 
+         else if (r-1) mod 13 = (p mod 13) then (r,b) 
          else (p,false)) (init, true) 
     |> snd
 

@@ -142,7 +142,7 @@ let rec make_hands acc count f =
 
 
 let random_straight_flush (_:unit)= 
-  print_endline "entered random_sraight_flush";
+  (* print_endline "entered random_sraight_flush"; *)
   let result = 
     let init =   (Random.int 9 + 1) in 
     let this_suit = random_suite (Random.int 4) in 
@@ -153,7 +153,7 @@ let random_straight_flush (_:unit)=
     |> Hand.insert (Card.make_card this_suit (multi_step init 3))
     |> Hand.insert (Card.make_card this_suit (multi_step init 4))
   in 
-  print_endline (Hand.string_of result);
+  (* print_endline (Hand.string_of result); *)
   result 
 
 
@@ -164,13 +164,14 @@ let example_straight_flush count seed =
 
 
 let random_straight (_:unit) = 
+  (* print_endline "entered random_straight";  *)
   let init =   (Random.int 9 + 1) in 
   let result = 
     Hand.empty
     |> Hand.insert (Card.make_card 
-                      (random_suite (Random.int 4)) init)
+                      (SPADE) init)
     |> Hand.insert (Card.make_card 
-                      (random_suite (Random.int 4)) (multi_step init 1))
+                      (HEART) (multi_step init 1))
     |> Hand.insert (Card.make_card 
                       (random_suite (Random.int 4)) (multi_step init 2))
     |> Hand.insert (Card.make_card 
@@ -198,7 +199,7 @@ let random_flush (_:unit) =
         else let r =   (Random.int 13 + 1) in 
           if List.mem r acc then helper acc count 
           else helper (r::acc) (count-1) in 
-      helper [] 5 in 
+      helper [1;8] 3 in 
     List.fold_left (fun h r -> Hand.insert (Card.make_card suit r) h) 
       (init) (random_rank_list)
   in 
