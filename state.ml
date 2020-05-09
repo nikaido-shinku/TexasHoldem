@@ -254,6 +254,10 @@ let conclude t folded=
     let new_apl = 
       add_money t new_apl new_pl non_folds in 
 
+    let new_apl = ask_whether_continue new_apl in 
+    print_endline "# of current player "; 
+    print_int (List.length new_apl);
+    print_endline "\n";
 
     let clear_hand p = 
       {
@@ -303,23 +307,32 @@ let conclude t folded=
           } in  
           deck_2,new_pl::ap
         ) (Deck.shuffle standard_deck,[]) new_all_p_w_role in 
-    let updated_apl = ask_whether_continue apl in 
-    if (List.length updated_apl < 2) then failwith "No enough players." else
+
+    if (List.length apl < 2) then failwith "No enough players." else
       {
-        t with 
+
         round = 0; 
-        all_players = updated_apl ;
-        players = updated_apl;
+        all_players = apl ;
+        players = apl;
         cur_bet = 0;
         deck = new_deck;
         pots = [];
         community = [];
         max_bet = update_max_bet apl;
+        cur_player = (List.hd apl).name;
       }
   else 
     let sum = List.fold_left (fun s (str,i) -> s+i) 0 t.pots in 
     let new_apl = List.map (fun x -> if (x.name = (List.hd t.players).name)
-                             then {x with bid = x.bid + sum} else x) t.all_players in  
+                             then {x with bid = x.bid + sum} else x) 
+        t.all_players in  
+
+
+    let new_apl = ask_whether_continue new_apl in 
+    print_endline "# of current player "; 
+    print_int (List.length new_apl);
+    print_endline "\n";
+
     let clear_hand p = 
       {
         p with 
@@ -363,13 +376,13 @@ let conclude t folded=
           } in  
           deck_2,new_pl::ap
         ) (Deck.shuffle standard_deck,[]) new_all_p_w_role in 
-    let updated_apl = ask_whether_continue apl in 
-    if (List.length updated_apl < 2) then failwith "No enough players." else
+
+    if (List.length apl < 2) then failwith "No enough players." else
       {
-        t with 
+        cur_player = (List.hd apl).name;
         round = 0; 
-        all_players = updated_apl;
-        players = updated_apl;
+        all_players = apl;
+        players = apl;
         cur_bet = 0;
         deck = new_deck;
         pots = [];
