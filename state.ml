@@ -254,6 +254,12 @@ let conclude t folded=
     let new_apl = 
       add_money t new_apl new_pl non_folds in 
 
+    let new_apl = 
+      let head_of_player = List.hd new_apl in 
+      new_apl |> List.tl |> List.rev |> List.cons head_of_player 
+      |> List.rev in 
+
+
     let new_apl = ask_whether_continue new_apl in 
     print_endline "# of current player "; 
     print_int (List.length new_apl);
@@ -281,8 +287,11 @@ let conclude t folded=
         match pl with 
         |[] -> failwith "pl is empty"
         | a ->List.hd pl in 
-      pl |> List.tl |> List.rev |> List.cons sb |> List.rev 
-      |> update_bs_blind [] |> List.rev
+      pl 
+      (* |> List.tl |> List.rev |> List.cons sb  *)
+      (* |> List.rev  *)
+      |> update_bs_blind [] 
+      (* |> List.rev *)
     in 
     let new_all_p_w_role = 
       (* let tail =  List.nth new_all_players_w_ch 
@@ -329,6 +338,11 @@ let conclude t folded=
                              then {x with bid = x.bid + sum} else x) 
         t.all_players in  
 
+    let new_apl = 
+      let head_of_player = List.hd new_apl in 
+      new_apl |> List.tl |> List.rev |> List.cons head_of_player 
+      |> List.rev in 
+
 
     let new_apl = ask_whether_continue new_apl in 
     print_endline "# of current player "; 
@@ -357,8 +371,7 @@ let conclude t folded=
         match pl with 
         |[] -> failwith "pl is empty"
         | a ->List.hd pl in 
-      pl |> List.tl |> List.rev |> List.cons sb |> List.rev 
-      |> update_bs_blind [] |> List.rev
+      pl |> update_bs_blind [] 
     in 
     let new_all_p_w_role = 
       update new_all_players_w_ch 
