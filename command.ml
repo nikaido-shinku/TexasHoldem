@@ -10,10 +10,17 @@ exception Empty
 
 exception Malformed
 
+(** [parse_amount parts] parse the sting form of a number into int type. 
+    Requires: [parts]'s length is 1 and the only element in it is a string form 
+    number. Raises: Malformed when the length of [parts] is not 1. *)
 let parse_amount parts = 
   if List.length parts <> 1 then raise Malformed
   else int_of_string (List.hd parts)
 
+(** [parse_command parts] parse string list [parts] into commands along with 
+    inputs if needed. 
+    Raises: Empty when [parts] is an empty list. 
+    Malformed when the parts corresbond to no command. *)
 let parse_command parts = 
   match parts with 
   |[] -> raise Empty
