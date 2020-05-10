@@ -1,3 +1,41 @@
+(** 
+
+   Test Plan: 
+
+   OUnit test: 
+   we will test basically small component of the game using
+   OUnit , including functions in card, deck, and hand
+   (which includes but not limited to dealt a card, shuffle,  
+   the comparison of two cards)
+   and whether checking the type of the hand is working,
+   whether the program correctly decides the final winner.
+   Manually tested:
+   we will check all the remaining parts manually, including whether the 
+   sequence of small and big blind are correct, the concluding part, and 
+   when going to the next round, all states are reinitialized correctly. 
+   All the functions not tested in OUnit test, we will check if manually. 
+
+   Modules tested by OUnit & test cases types : 
+   Deck, Card, Hand modules are tested by OUnit, we used black box, 
+   glass box and randomized testing. In normal functions like check whether 
+   there is a card in the deck, we used black box; when checking whether 
+   converting a card to an integer or an integer to a card is working, 
+   we used glass box, since we know that we use the reminder of division, 
+   we checked edge cases; and when checking whether a hand’s type is 
+   correctly calculated, we used both glass box and randomized since ace 
+   would be used in both ace,2,3,4,5 and 10, J, Q, K, ace and this should 
+   be an edge case. 
+
+   why demonstrates the correctness of the system:
+   OUnit test suits will make sure that the corner cases of fundamental 
+   system are correct, while manual tests will make sure the general 
+   rules are correct, since all testers are very familiar with the rules 
+   of poker, it’s easy to catch any mistake. After a few rounds, 
+   the general process and rules of the game is guaranteed. 
+
+
+
+*)
 open OUnit2
 open Card
 open Hand
