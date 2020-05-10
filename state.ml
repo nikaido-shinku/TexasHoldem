@@ -142,8 +142,10 @@ let winners t pl =
   fst (Hand.highest_hand t.community 
          (List.map (fun x -> x.hand) pl))
 
-
-
+(** [replace_player name pl new_player] is [pl] after replacing 
+    players with name [name] into [new_player]*)
+let replace_player name pl new_player = 
+  List.map (fun x -> if (x.name = name) then new_player else x) pl
 
 (** [add_money_single_step pl pots] finds the smalles bet paid,
     the times that bet by the size of [pl], and add to the winner in [pl]
@@ -159,11 +161,7 @@ let add_money_single_step (t) (apl) (pl:player list) pots =
   let winners = winners t pl in
   let avg_add = add_total/List.length winners  in 
 
-  let rec update_player 
-      (pl:player list)
-      (apl: player list )
-      (wins:int list)
-      (count:int) = 
+  let rec update_player (pl:player list)(apl: player list )(wins)(count) = 
     match pl with
     |[] -> (pl, apl)
     |p :: tl -> 
@@ -191,8 +189,12 @@ let add_money_single_step (t) (apl) (pl:player list) pots =
   let (new_pl, new_apl) = (update_player pl apl winners 0) in 
   (new_pl,new_apl,new_pots) 
 
+
 (** [add_money t apl pl pots] adds all the money respectively to their
-    winners and return the final all players list*)
+    winners and return the final all players list
+    Note: should be called after add_money_fold,
+    since it would be more efficient
+*)
 let rec add_money t apl pl pots = 
   match pots with 
   |[] -> apl 
@@ -205,36 +207,34 @@ let rec add_money t apl pl pots =
       (new_pots  |> List.filter (fun (s,i) -> i <> 0))
 
 
-
+(** [sum_and_non_fold_of pl pots] is the tuple (sum,non_fold) 
+    which is the sume of the folded player's bet, and all the nonfolded
+    players with their current bet *)
+let sum_and_non_fold_of pl pots =
+  let name_list = player_id_list_of_pl pl in 
+  pots 
+  |> List.fold_left
+    (fun (sum, non_folds) (name, bet) -> 
+       if List.mem (name) name_list then 
+         ( sum ,(name, bet) :: non_folds)
+       else (sum+bet), non_folds )
+    (0,[]) 
 
 (** [add_money_fold t apl pl pots] adds the money of all the folded cards to 
-    the winner*)
+    the winner
+    @returns the tuple (pl,apl,non_folds) to return the new 
+    playerlist, all_player_list, and pots without folded players*)
 let add_money_fold t apl pl pots = 
-  let name_list = player_id_list_of_pl pl in 
-  let (sum,non_folds) = 
-    pots 
-    |> List.fold_left
-      (fun (sum, non_folds) (name, bet) -> 
-         if List.mem (name) name_list then 
-           ( sum ,(name, bet) :: non_folds)
-         else (sum+bet), non_folds )
-      (0,[]) in
-  let winners = fst (Hand.highest_hand t.community 
-                       (List.map (fun x -> x.hand) pl)) in
-  let number_of_winner = List.length winners in 
-
-  let avg_add = sum/number_of_winner in 
-  let rec update_player (pl:player list)
-      (apl: player list )
-      (wins:int list)
-      (count:int) = 
+  let (sum,non_folds) = sum_and_non_fold_of pl pots in
+  let winners = winners t pl in 
+  let avg_add = sum/ List.length winners in 
+  let rec update_player (pl:player list)(apl: player list)(wins)(count) = 
     match pl with
     |[] -> (pl, apl)
     |p :: tl -> 
       if (List.mem count wins) 
       then let new_player = {p with bid = p.bid +avg_add;} in 
-        let new_apl = 
-          List.map (fun x -> if (x.name = p.name) then new_player else x) apl in
+        let new_apl = replace_player p.name apl new_player in 
         let (new_pl, new_apl) = update_player tl new_apl wins (count+1) in 
         (new_player :: new_pl , new_apl)
       else 
@@ -352,6 +352,9 @@ let rec first_after_smallblind ap all_p cur_ps found =
     then h.name 
     else first_after_smallblind ap t cur_ps true
   | _,_ -> (List.hd ap).name
+
+
+
 
 
 (**[state_checker t] returns the state after a player acts. 
