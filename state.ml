@@ -319,7 +319,9 @@ let conclude t folded=
         pots = [];
         community = [];
         max_bet = update_max_bet apl;
-        cur_player = (List.hd apl).name;
+        cur_player = (List.hd 
+                        (List.filter 
+                           (fun x -> x.role = SmallBlind) apl)).name;
       }
   else 
     let sum = List.fold_left (fun s (str,i) -> s+i) 0 t.pots in 
@@ -379,7 +381,9 @@ let conclude t folded=
 
     if (List.length apl < 2) then raise NoEnoughPlayer else
       {
-        cur_player = (List.hd apl).name;
+        cur_player = (List.hd 
+                        (List.filter 
+                           (fun x -> x.role = SmallBlind) apl)).name;
         round = 0; 
         all_players = apl;
         players = apl;
@@ -492,19 +496,35 @@ let conclude t folded=
     max_bet = update_max_bet new_all_p_w_role;
    } *)
 
-
-
+(**[first_after_smallblind ap all_p cur_ps found] gives the next palyer
+   who is still in the game after small blind  *)
+let rec first_after_smallblind ap all_p cur_ps found = 
+  match all_p, found with 
+  |[], true -> first_after_smallblind ap ap cur_ps true
+  |h::t, false -> if (h.role = SmallBlind) then (
+      if (List.filter (fun x -> x.name = h.name) cur_ps) <> [] then h.name 
+      else first_after_smallblind ap t cur_ps true) 
+    else first_after_smallblind ap t cur_ps false
+  |h::t, true -> if (List.filter (fun x -> x.name = h.name) cur_ps) <> [] 
+    then h.name 
+    else first_after_smallblind ap t cur_ps true
+  | _,_ -> (List.hd ap).name
 
 let state_checker t = 
   if ( List.length t.players = 1) then conclude t true
   else if (List.for_all (fun (x:player) -> x.cur_bet = t.cur_bet) t.players
-           && action_ok t)
+           && action_ok t && 
+           ((find_player t).role <> BigBlind || 
+            t.round <>0 || t.cur_bet <>bigBlindInit))
   then 
     if (t.round = 3 ) then conclude t false
     else if (t.round <> 0 ) then
       let card = t.deck |> shuffle |> deal in
+      let updated_cur_p = first_after_smallblind t.all_players t.all_players
+          t.players false in 
       {
         t with 
+        cur_player = updated_cur_p;
         round = t.round + 1;
         players = reset_action t.players;
         (* cur_bet = 1; *)
@@ -514,14 +534,17 @@ let state_checker t =
             Some x -> x:: t.community
           | None -> failwith "no card anymore";
 
+
       }
     else  let (card1, deck1) = t.deck |> shuffle |> deal in
       let (card2, deck2) = deck1 |> deal in 
       let (card3,deck3) = deck2 |> deal in 
+      let updated_cur_p = first_after_smallblind t.all_players t.all_players
+          t.players false in 
       {
         t with 
         round = t.round + 1;
-
+        cur_player = updated_cur_p;
         players = reset_action t.players;
         (* cur_bet = 1; *)
         deck = deck3;
