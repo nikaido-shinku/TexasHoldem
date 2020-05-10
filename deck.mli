@@ -32,4 +32,5 @@ val remove : t -> Card.t -> t
 (** [insert c d] is the deck [d] after inserting the card [c]*)
 val insert : Card.t -> t -> t
 
+(** [to_list d] is the list cards representing the deck [d]. *)
 val to_list : t -> Card.t list

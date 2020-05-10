@@ -3,6 +3,7 @@ open Card
 (** the type for a hand*)
 type t
 
+(** all different categories of final hands consisted of five cards. *)
 type category = 
   |Unknown
   |HighCard

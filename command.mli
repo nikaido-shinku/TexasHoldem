@@ -7,7 +7,8 @@ type command =
   |Check
   |Exit
   |Quit
-  (** Raised when no command is parsed. *)
+
+(** Raised when no command is parsed. *)
 exception Empty
 
 (** Raises when an invalid command is parsed. *)

@@ -25,14 +25,9 @@ let empty = []
 
 let size = List.length
 
-
-let rep_ok h = 
-  if (size h > 5) then failwith "RI violation in Hand: more than 5 cards" 
-  else h
-
 let mem  = List.mem
 
-let insert c h = (if mem c h then h else c::h) |> rep_ok
+let insert c h = (if mem c h then h else c::h) 
 
 let combine h1 h2 = h1 @ h2
 
