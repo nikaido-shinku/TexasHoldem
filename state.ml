@@ -243,169 +243,84 @@ let rec ask_whether_continue (all_player: player list)  =
         ask_whether_continue all_player
     )
 
+(**[new_all_player t folded] will give the new updated player lists 
+   with all paleyrs reset to their inital state in the round 0  *)
+let new_all_player t folded = 
+  let updated_money = if not folded 
+    then let (new_pl, new_apl, non_folds) = 
+           add_money_fold t t.all_players t.players t.pots in 
+      add_money t new_apl new_pl non_folds 
+    else let sum = List.fold_left (fun s (str,i) -> s+i) 0 t.pots in 
+      List.map (fun x -> if (x.name = (List.hd t.players).name)
+                 then {x with bid = x.bid + sum} else x) 
+        t.all_players 
+  in 
+  let remove_sbblind_to_end = 
+    let head_of_player = List.hd updated_money in 
+    updated_money |> List.tl |> List.rev |> List.cons head_of_player 
+    |> List.rev 
+  in ask_whether_continue remove_sbblind_to_end
 
 
 (** [conclude t] conclude a game, given the final state is [t] and start a 
     new game. *) 
 let conclude t folded= 
-  if not folded then 
-    let (new_pl, new_apl, non_folds) = 
-      add_money_fold t t.all_players t.players t.pots in 
-    let new_apl = 
-      add_money t new_apl new_pl non_folds in 
 
-    let new_apl = 
-      let head_of_player = List.hd new_apl in 
-      new_apl |> List.tl |> List.rev |> List.cons head_of_player 
-      |> List.rev in 
+  let new_apl = new_all_player t folded in 
 
+  let clear_hand p = 
+    {
+      p with 
+      cur_bet = 0;
+      action = false;
+      hand = Hand.empty;
+    } in 
 
-    let new_apl = ask_whether_continue new_apl in 
-    print_endline "# of current player "; 
-    print_int (List.length new_apl);
-    print_endline "\n";
+  let new_all_players_w_ch = 
+    List.map clear_hand (new_apl) in 
+  let rec update_bs_blind  acc ls = 
+    match ls , acc with 
+    |[] , _ -> acc
+    |h:: t, [] -> update_bs_blind [{h with role = SmallBlind}] t
+    |h::t, [x]  -> update_bs_blind  ({h with role = BigBlind} :: acc) t
+    |h :: t, _ ->update_bs_blind ({h with role = Normal} :: acc) t
+  in
+  let update pl = 
+    match pl with 
+    |[] -> failwith "pl is empty"
+    | a -> pl |> update_bs_blind [] 
+  in 
+  let new_all_p_w_role = update new_all_players_w_ch in 
+  let (new_deck,apl) = 
+    List.fold_left (fun (deck,ap) (pl:player) -> 
+        let (card_1, deck_1) = Deck.deal deck in 
+        let (card_2, deck_2) = Deck.deal deck_1 in 
+        let new_pl = {
+          pl with 
+          hand = Hand.empty |> Hand.insert 
+                   (match card_1 with Some x -> x 
+                                    | None -> Stdlib.raise NoMoreCard) |> 
+                 Hand.insert 
+                   (match card_2 with Some x -> x 
+                                    | None -> Stdlib.raise NoMoreCard);
+        } in  
+        deck_2,new_pl::ap
+      ) (Deck.shuffle standard_deck,[]) new_all_p_w_role in 
+  if (List.length apl < 2) then raise NoEnoughPlayer else
+    {
+      round = 0; 
+      all_players = apl ;
+      players = apl;
+      cur_bet = 0;
+      deck = new_deck;
+      pots = [];
+      community = [];
+      max_bet = update_max_bet apl;
+      cur_player = (List.hd 
+                      (List.filter 
+                         (fun x -> x.role = SmallBlind) apl)).name;
+    }
 
-    let clear_hand p = 
-      {
-        p with 
-        cur_bet = 0;
-        action = false;
-        hand = Hand.empty;
-      } in 
-
-    let new_all_players_w_ch = 
-      List.map clear_hand (new_apl) in 
-    let rec update_bs_blind  acc ls = 
-      match ls , acc with 
-      |[] , _ -> acc
-      |h:: t, [] -> update_bs_blind [{h with role = SmallBlind}] t
-      |h::t, [x]  -> update_bs_blind  ({h with role = BigBlind} :: acc) t
-      |h :: t, _ ->update_bs_blind ({h with role = Normal} :: acc) t
-    in
-    let update pl = 
-      let sb =
-        match pl with 
-        |[] -> failwith "pl is empty"
-        | a ->List.hd pl in 
-      pl 
-      (* |> List.tl |> List.rev |> List.cons sb  *)
-      (* |> List.rev  *)
-      |> update_bs_blind [] 
-      (* |> List.rev *)
-    in 
-    let new_all_p_w_role = 
-      (* let tail =  List.nth new_all_players_w_ch 
-          ((List.length new_all_players_w_ch)-1) in 
-         match tail.role with 
-         | SmallBlind -> update new_all_players_w_ch  
-         | _ -> *)
-      update new_all_players_w_ch 
-    in 
-    let (new_deck,apl) = 
-      List.fold_left (fun (deck,ap) (pl:player) -> 
-          let (card_1, deck_1) = Deck.deal deck in 
-          let (card_2, deck_2) = Deck.deal deck_1 in 
-          let new_pl = {
-            pl with 
-            hand = Hand.empty |> Hand.insert 
-                     (match card_1 with Some x -> x 
-                                      | None -> Stdlib.raise NoMoreCard) |> 
-                   Hand.insert 
-                     (match card_2 with Some x -> x 
-                                      | None -> Stdlib.raise NoMoreCard);
-          } in  
-          deck_2,new_pl::ap
-        ) (Deck.shuffle standard_deck,[]) new_all_p_w_role in 
-
-    if (List.length apl < 2) then raise NoEnoughPlayer else
-      {
-
-        round = 0; 
-        all_players = apl ;
-        players = apl;
-        cur_bet = 0;
-        deck = new_deck;
-        pots = [];
-        community = [];
-        max_bet = update_max_bet apl;
-        cur_player = (List.hd 
-                        (List.filter 
-                           (fun x -> x.role = SmallBlind) apl)).name;
-      }
-  else 
-    let sum = List.fold_left (fun s (str,i) -> s+i) 0 t.pots in 
-    let new_apl = List.map (fun x -> if (x.name = (List.hd t.players).name)
-                             then {x with bid = x.bid + sum} else x) 
-        t.all_players in  
-
-    let new_apl = 
-      let head_of_player = List.hd new_apl in 
-      new_apl |> List.tl |> List.rev |> List.cons head_of_player 
-      |> List.rev in 
-
-
-    let new_apl = ask_whether_continue new_apl in 
-    print_endline "# of current player "; 
-    print_int (List.length new_apl);
-    print_endline "\n";
-
-    let clear_hand p = 
-      {
-        p with 
-        cur_bet = 0;
-        action = false;
-        hand = Hand.empty;
-      } in 
-    let new_all_players_w_ch = 
-      List.map clear_hand (new_apl) in 
-    print_endline (string_of_int (List.length new_all_players_w_ch));
-    let rec update_bs_blind  acc ls = 
-      match ls , acc with 
-      |[] , _ -> acc
-      |h:: t, [] -> update_bs_blind [{h with role = SmallBlind}] t
-      |h::t, [x]  -> update_bs_blind  ({h with role = BigBlind} :: acc) t
-      |h :: t, _ ->update_bs_blind ({h with role = Normal} :: acc) t
-    in
-    let update pl = 
-      let sb =
-        match pl with 
-        |[] -> failwith "pl is empty"
-        | a ->List.hd pl in 
-      pl |> update_bs_blind [] 
-    in 
-    let new_all_p_w_role = 
-      update new_all_players_w_ch 
-    in 
-    let (new_deck,apl) = 
-      List.fold_left (fun (deck,ap) (pl:player) -> 
-          let (card_1, deck_1) = Deck.deal deck in 
-          let (card_2, deck_2) = Deck.deal deck_1 in 
-          let new_pl = {
-            pl with 
-            hand = Hand.empty |> Hand.insert 
-                     (match card_1 with Some x -> x 
-                                      | None -> Stdlib.raise NoMoreCard) |> 
-                   Hand.insert 
-                     (match card_2 with Some x -> x 
-                                      | None -> Stdlib.raise NoMoreCard);
-          } in  
-          deck_2,new_pl::ap
-        ) (Deck.shuffle standard_deck,[]) new_all_p_w_role in 
-
-    if (List.length apl < 2) then raise NoEnoughPlayer else
-      {
-        cur_player = (List.hd 
-                        (List.filter 
-                           (fun x -> x.role = SmallBlind) apl)).name;
-        round = 0; 
-        all_players = apl;
-        players = apl;
-        cur_bet = 0;
-        deck = new_deck;
-        pots = [];
-        community = [];
-        max_bet = update_max_bet apl;
-      }
 (* if not folded then
    let a_players = t.all_players in 
    let winners = fst (Hand.highest_hand t.community 
