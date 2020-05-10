@@ -31,17 +31,6 @@ let insert c h = (if mem c h then h else c::h)
 
 let combine h1 h2 = h1 @ h2
 
-(* 
-let rec union h1 h2 = 
-  match h1 with 
-  |[] -> h2
-  |h :: tl -> if mem h h2 then union tl h2 
-    else union tl (h :: h2) *)
-
-
-
-
-
 (** [sort hand] is the [hand] after sorted according to the rule of the card*)
 let sort h = List.sort Card.compare h
 
