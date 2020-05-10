@@ -17,7 +17,8 @@ val size : t -> int
 *)
 val deal : t -> Card.t option * t
 
-(** [shuffle d] is the deck [d] after shuffling*)
+(** [shuffle d] is the deck [d] after shuffling, and if [d] is an empty
+    deck it will generalize a full deck of 52 cards shuffled*)
 val shuffle : t -> t
 
 (** [mem d r s] is whether the card with rank [r] suite [s] 
