@@ -279,51 +279,56 @@ let new_all_player t folded =
     |> List.rev 
   in ask_whether_continue remove_sbblind_to_end
 
-
-(** [conclude t] conclude a game, given the final state is [t] and start a 
-    new game. *) 
-let conclude t folded= 
-
-  let new_apl = new_all_player t folded in 
-
-  let clear_hand p = 
+(** [clear_hand p] is [p] with bet reset to 0, and 
+    action false, hand to empty hand*)
+let clear_hand apl = 
+  let update p = 
     {
       p with 
       cur_bet = 0;
       action = false;
       hand = Hand.empty;
     } in 
+  List.map update (apl)
 
-  let new_all_players_w_ch = 
-    List.map clear_hand (new_apl) in 
-  let rec update_bs_blind  acc ls = 
+(** [update_bs_blind pl] is [pl] with small/big blind updated*)
+let update_bs_blind pl = 
+  let rec helper acc ls = 
     match ls , acc with 
     |[] , _ -> acc
-    |h:: t, [] -> update_bs_blind [{h with role = SmallBlind}] t
-    |h::t, [x]  -> update_bs_blind  ({h with role = BigBlind} :: acc) t
-    |h :: t, _ ->update_bs_blind ({h with role = Normal} :: acc) t
-  in
-  let update pl = 
-    match pl with 
-    |[] -> failwith "pl is empty"
-    | a -> pl |> update_bs_blind [] 
-  in 
-  let new_all_p_w_role = update new_all_players_w_ch in 
+    |h:: t, [] -> helper [{h with role = SmallBlind}] t
+    |h::t, [x]  -> helper  ({h with role = BigBlind} :: acc) t
+    |h :: t, _ -> helper ({h with role = Normal} :: acc) t
+  in match pl with
+  |[] -> failwith "pl is empty"
+  |_ -> helper [] pl 
+
+(** [deal_card apl] generates a standard shuffled deck and deals 2 card
+    to all the players in [apl] and then return the new deck and apl*)
+let deal_card apl =
+  List.fold_left (fun (deck,ap) (pl:player) -> 
+      let (card_1, deck_1) = Deck.deal deck in 
+      let (card_2, deck_2) = Deck.deal deck_1 in 
+      let new_pl = {
+        pl with 
+        hand = Hand.empty |> Hand.insert 
+                 (match card_1 with Some x -> x 
+                                  | None -> Stdlib.raise NoMoreCard) |> 
+               Hand.insert 
+                 (match card_2 with Some x -> x 
+                                  | None -> Stdlib.raise NoMoreCard);
+      } in  
+      deck_2,new_pl::ap
+    ) (Deck.shuffle standard_deck,[]) apl
+
+(** [conclude t folded] conclude a game, given the final state is [t] 
+    and start a new game depends on whether the game ends with only one
+    player not folded as described in [folded]*) 
+let conclude t folded= 
+  let new_all_p_w_role = folded |> (new_all_player t) |> clear_hand
+                         |> update_bs_blind in 
   let (new_deck,apl) = 
-    List.fold_left (fun (deck,ap) (pl:player) -> 
-        let (card_1, deck_1) = Deck.deal deck in 
-        let (card_2, deck_2) = Deck.deal deck_1 in 
-        let new_pl = {
-          pl with 
-          hand = Hand.empty |> Hand.insert 
-                   (match card_1 with Some x -> x 
-                                    | None -> Stdlib.raise NoMoreCard) |> 
-                 Hand.insert 
-                   (match card_2 with Some x -> x 
-                                    | None -> Stdlib.raise NoMoreCard);
-        } in  
-        deck_2,new_pl::ap
-      ) (Deck.shuffle standard_deck,[]) new_all_p_w_role in 
+    deal_card new_all_p_w_role in 
   if (List.length apl < 2) then raise NoEnoughPlayer else
     {
       round = 0; 

@@ -12,6 +12,7 @@ report
 *.cmx
 *.native
 *.byte
+*.coverage
 _build
 
 # temporary files
