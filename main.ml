@@ -13,6 +13,7 @@ exception InvalidCommand of string
 (** the padding between displaying information of current room*)
 let padding = "=====================================================\n" 
 
+(** the message at the start of a normal round of a player action. *)
 let instruct = "valid commands are: check call raise fold exit quit \n"
 
 (* the following section is the actual parsing of the game*)
